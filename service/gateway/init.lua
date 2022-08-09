@@ -1,17 +1,26 @@
+--[[
+* gateway 服务的实现
+]]
+
 local skynet = require "skynet"
 local socket = require "skynet.socket"
-local s = require "service"
 local config_run = require "config_run"
+local s = require "service" --import 的是 'service.lua', 在 lualib 中
+local utils = require "utils" --import utils.lua, 包含了 pack / unpack 工具方法
 
+-- 用于保存客户端连接信息
 conns = {} --[socket_id] = conn
+
+--用于记录[已登录]的玩家信息
 players = {} --[playerid] = gateplayer
 
 --连接类
 function conn()
     local m = {
-        fd = nil,
-        playerid = nil,
+        fd = nil, --socket fd
+        playerid = nil, --playerid
     }
+
     return m
 end
 
@@ -22,28 +31,8 @@ function gateplayer()
         agent = nil,
 		conn = nil,
     }
+
     return m
-end
-
-local str_pack = function(cmd, msg)
-    return table.concat( msg, ",").."\r\n"
-end
-
-local str_unpack = function(msgstr)
-    local msg = {}
-
-    while true do
-        local arg, rest = string.match( msgstr, "(.-),(.*)")
-        if arg then
-            msgstr = rest
-            table.insert(msg, arg)
-        else
-            table.insert(msg, msgstr)
-            break
-        end
-    end
-
-    return msg[1], msg
 end
 
 s.resp.send_by_fd = function(source, fd, msg)
@@ -192,6 +181,7 @@ local connect = function(fd, addr)
     skynet.fork(recv_loop, fd)
 end
 
+--服务启动后，service模块会调用s.init方法
 function s.init()
     local node = skynet.getenv("node")
     local nodecfg = config_run[node]

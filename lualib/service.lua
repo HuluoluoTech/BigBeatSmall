@@ -5,9 +5,11 @@ local M = {
 	--类型和id
 	name = "",
 	id = 0,
+
 	--回调函数
 	exit = nil,
 	init = nil,
+	
 	--分发方法
 	resp = {},
 }
