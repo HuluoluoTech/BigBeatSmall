@@ -137,10 +137,11 @@ local process_msg = function(fd, msgstr)
     else
         local gplayer = players[playerid]
         local agent = gplayer.agent
+
+        --client是自定义的消息名
 		skynet.send(agent, "lua", "client", cmd, msg)
     end
 end
-
 
 local process_buff = function(fd, readbuff)
     while true do

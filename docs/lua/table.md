@@ -17,3 +17,12 @@ Account.withdraw(100.00)
 
 ---
 
+```lua
+A = {1,2,3}
+A[1] --1
+```
+
+table 的 index 从 1 开始。。。
+
+---
+
