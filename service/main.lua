@@ -28,7 +28,7 @@ function run()
 	--节点管理
 	--[[
 		* API: newservice
-		
+
 		newservice(name, ...) 启动一个名为 name 的新服务。
 		- name 是脚本的名字（不用写 .lua 后缀）
 		- 这是一个阻塞 API
