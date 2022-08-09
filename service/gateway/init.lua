@@ -12,10 +12,10 @@ local utils = require "utils" --import utils.lua, 包含了 pack / unpack 工具
 conns = {} --[socket_id] = conn
 
 --用于记录[已登录]的玩家信息
-players = {} --[playerid] = gateplayer
+players = {} --[playerid] = new_gateplayer
 
 --连接类
-function conn()
+function new_conn()
     local m = {
         fd = nil, --socket fd
         playerid = nil, --playerid
@@ -25,7 +25,7 @@ function conn()
 end
 
 --玩家类
-function gateplayer()
+function new_gateplayer()
     local m = {
         playerid = nil,
         agent = nil,
@@ -35,6 +35,14 @@ function gateplayer()
     return m
 end
 
+--[[
+    * 设置 service.lua 中的变量
+    * 给 resp 添加方法:
+    1/ send_by_fd
+    2/ send
+    3/ sure_agent
+    4/ kick
+]]
 s.resp.send_by_fd = function(source, fd, msg)
     if not conns[fd] then
         return
@@ -59,7 +67,6 @@ s.resp.send = function(source, playerid, msg)
 end
 
 s.resp.sure_agent = function(source, fd, playerid, agent)
-
 	local conn = conns[fd]
 	if not conn then --登陆过程中已经下线
 		skynet.call("agentmgr", "lua", "reqkick", playerid, "未完成登陆即下线")
@@ -68,7 +75,7 @@ s.resp.sure_agent = function(source, fd, playerid, agent)
 	
 	conn.playerid = playerid
 	
-    local gplayer = gateplayer()
+    local gplayer = new_gateplayer()
     gplayer.playerid = playerid
     gplayer.agent = agent
 	gplayer.conn = conn
@@ -112,11 +119,6 @@ s.resp.kick = function(source, playerid)
     disconnect(c.fd)
     socket.close(c.fd)
 end
-
-
-
-
-
 
 local process_msg = function(fd, msgstr)
     local cmd, msg = str_unpack(msgstr)
@@ -175,9 +177,10 @@ end
 --有新连接时
 local connect = function(fd, addr)
     print("connect from " .. addr .. " " .. fd)
-	local c = conn()
+	local c = new_conn()
     conns[fd] = c
     c.fd = fd
+
     skynet.fork(recv_loop, fd)
 end
 
@@ -192,7 +195,7 @@ function s.init()
     socket.start(listenfd , connect)
 end
 
-
+-- start
 s.start(...)
 
 --[[ 带有粘包处理
