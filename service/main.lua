@@ -26,6 +26,13 @@ function run()
 	local node_cfg = config_run[current_node]
 
 	--节点管理
+	--[[
+		* API: newservice
+		
+		newservice(name, ...) 启动一个名为 name 的新服务。
+		- name 是脚本的名字（不用写 .lua 后缀）
+		- 这是一个阻塞 API
+	]]
 	local node_mgr = skynet.newservice("nodemgr","node_mgr", 0)
 	skynet.name("node_mgr", node_mgr)
 
