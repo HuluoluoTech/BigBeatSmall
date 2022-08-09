@@ -8,11 +8,19 @@ local skynet_manager = require "skynet.manager"
 local cluster = require "skynet.cluster"
 local config_run = require "config_run"
 
+-- local package_path = package.path
+-- package.path = package_path.."./lualib/utils.lua"
+-- print("package path: "..package.path)
+
+local utils = require("utils")
+
 --[[
 * 剥离一个function出来，目前直接closure看着不太舒服，比较乱的感觉
 * 执行逻辑
 ]] 
 function run()
+	print_mascot()
+
 	--初始化当前Node
 	local current_node = skynet.getenv("node")
 	local node_cfg = config_run[current_node]
