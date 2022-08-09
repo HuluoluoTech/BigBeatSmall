@@ -59,3 +59,4 @@ s.leave_scene = function()
     s.snode = nil
     s.sname = nil
 end
+

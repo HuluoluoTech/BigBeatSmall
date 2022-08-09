@@ -2,11 +2,16 @@ local skynet = require "skynet"
 local s = require "service"
 
 s.client = {}
-s.gate = nil
+s.gate = nil --用于保存玩家对应gateway的id
 
-require "scene"
+-- require "scene"
 
+s.client.work = function(msg)
+	s.data.coin = s.data.coin + 1
+	return {"work", s.data.coin}
+end
 
+-- service.lua resp 添加方法
 s.resp.client = function(source, cmd, msg)
     s.gate = source
     if s.client[cmd] then
@@ -17,11 +22,6 @@ s.resp.client = function(source, cmd, msg)
     else
         skynet.error("s.resp.client fail", cmd)
     end
-end
-
-s.client.work = function(msg)
-	s.data.coin = s.data.coin + 1
-	return {"work", s.data.coin}
 end
 
 s.resp.kick = function(source)
@@ -42,6 +42,7 @@ s.init = function( )
 	--playerid = s.id
 	--在此处加载角色数据
 	skynet.sleep(200)
+	
 	s.data = {
 		coin = 100,
 		hp = 200,

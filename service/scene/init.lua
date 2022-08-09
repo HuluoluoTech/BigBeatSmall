@@ -5,6 +5,7 @@ local balls = {} --[playerid] = ball
 local foods = {} --[id] = food
 local food_maxid = 0
 local food_count = 0
+
 --球
 function ball()
     local m = {
@@ -69,17 +70,22 @@ s.resp.enter = function(source, playerid, node, agent)
     b.playerid = playerid
     b.node = node
     b.agent = agent
+
     --广播
     local entermsg = {"enter", playerid, b.x, b.y, b.size}
     broadcast(entermsg)
+
     --记录
     balls[playerid] = b
+
     --回应
     local ret_msg = {"enter",0,"进入成功"}
     s.send(b.node, b.agent, "send", ret_msg)
+
     --发战场信息
     s.send(b.node, b.agent, "send", balllist_msg())
     s.send(b.node, b.agent, "send", foodlist_msg())
+    
     return true
 end
 
