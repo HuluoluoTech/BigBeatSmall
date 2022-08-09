@@ -12,4 +12,5 @@ bash -x start.sh 1
 ```
 
 ### Link
-[million_game_server](https://github.com/luopeiyu/million_game_server)
+* [million_game_server](https://github.com/luopeiyu/million_game_server)
+* [skynet api](https://github.com/cloudwu/skynet/wiki/LuaAPI)
