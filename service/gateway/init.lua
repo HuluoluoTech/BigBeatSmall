@@ -1,7 +1,7 @@
 local skynet = require "skynet"
 local socket = require "skynet.socket"
 local s = require "service"
-local runconfig = require "runconfig"
+local config_run = require "config_run"
 
 conns = {} --[socket_id] = conn
 players = {} --[playerid] = gateplayer
@@ -138,7 +138,7 @@ local process_msg = function(fd, msgstr)
     --尚未完成登录流程
     if not playerid then
         local node = skynet.getenv("node")
-        local nodecfg = runconfig[node]
+        local nodecfg = config_run[node]
         local loginid = math.random(1, #nodecfg.login)
         local login = "login"..loginid
 		skynet.send(login, "lua", "client", fd, cmd, msg)
@@ -194,7 +194,7 @@ end
 
 function s.init()
     local node = skynet.getenv("node")
-    local nodecfg = runconfig[node]
+    local nodecfg = config_run[node]
     local port = nodecfg.gateway[s.id].port
 
     local listenfd = socket.listen("0.0.0.0", port)

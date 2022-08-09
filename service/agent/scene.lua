@@ -1,7 +1,7 @@
 
 local skynet = require "skynet"
 local s = require "service"
-local runconfig = require "runconfig"
+local config_run = require "config_run"
 local mynode = skynet.getenv("node")
 
 s.snode = nil --scene_node
@@ -10,16 +10,16 @@ s.sname = nil --scene_id
 local function random_scene()
     --选择node
     local nodes = {}
-    for i, v in pairs(runconfig.scene) do
+    for i, v in pairs(config_run.scene) do
         table.insert(nodes, i)
-        if runconfig.scene[mynode] then
+        if config_run.scene[mynode] then
             table.insert(nodes, mynode)
         end
     end
     local idx = math.random( 1, #nodes)
     local scenenode = nodes[idx]
     --具体场景
-    local scenelist = runconfig.scene[scenenode]
+    local scenelist = config_run.scene[scenenode]
     local idx = math.random( 1, #scenelist)
     local sceneid = scenelist[idx]
     return scenenode, sceneid
