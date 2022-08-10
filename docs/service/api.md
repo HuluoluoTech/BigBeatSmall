@@ -4,3 +4,17 @@ skynet.call
 skynet.send
 把一条类别为 typename 的消息发送给 address
 
+skynet.start(...)
+每个 skynet 服务都必须有一个启动函数。你必须主动调用 skynet.start(function() ... end) 。
+
+skynet.fork(func, ...) 
+从功能上，它等价于 skynet.timeout(0, function() func(...) end) 但是比 timeout 高效一点。因为它并不需要向框架注册一个定时器。
+
+skynet.address(address) 
+用于把一个地址数字转换为一个可用于阅读的字符串。
+
+skynet.register(name) 
+可以为自己注册一个别名。
+
+skynet.monitor 
+给当前 skynet 进程设置一个全局的服务监控。
