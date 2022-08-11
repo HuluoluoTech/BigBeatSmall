@@ -53,6 +53,8 @@ function run()
 	end
 
 	--开启agentmgr服务
+	--#TODO
+	--agentmgr 设为全局服务？？？
 	local anode = config_run.agentmgr.node
 	if current_node == anode then
 		local srv = skynet.newservice("agentmgr", "agentmgr", 0)
