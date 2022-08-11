@@ -9,13 +9,13 @@ local s = require "service" --import 的是 'service.lua', 在 lualib 中
 local utils = require "utils" --import utils.lua, 包含了 pack / unpack 工具方法
 
 -- 用于保存客户端连接信息
-conns = {} --[socket_id] = conn
+local conns = {} --[socket_id] = conn
 
 --用于记录[已登录]的玩家信息
-players = {} --[playerid] = new_gateplayer
+local players = {} --[playerid] = new_gateplayer
 
 --连接类
-function new_conn()
+local function new_conn()
     local m = {
         fd = nil, --socket fd
         playerid = nil, --playerid
@@ -25,7 +25,7 @@ function new_conn()
 end
 
 --玩家类
-function new_gateplayer()
+local function new_gateplayer()
     local m = {
         playerid = nil,
         agent = nil,
@@ -187,6 +187,8 @@ end
 
 --服务启动后，service模块会调用s.init方法
 function s.init()
+    print("#gateway init")
+    
     local node = skynet.getenv("node")
     local nodecfg = config_run[node]
     local port = nodecfg.gateway[s.id].port

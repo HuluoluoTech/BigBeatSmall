@@ -4,6 +4,7 @@
 
 local skynet = require "skynet"
 local cluster = require "skynet.cluster"
+local utils = require "utils"
 
 -- #TODO
 -- 为什么 这个 M 变量名经常出现？？？
@@ -53,6 +54,9 @@ local dispatch = function(session, address, cmd, ...)
 end
 
 function init()
+	print("#service init()")
+	print("M: "..dump(M))
+
 	skynet.dispatch("lua", dispatch)
 	if M.init then
 		M.init()
