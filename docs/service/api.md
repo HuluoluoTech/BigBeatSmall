@@ -18,3 +18,6 @@ skynet.register(name)
 
 skynet.monitor 
 给当前 skynet 进程设置一个全局的服务监控。
+
+skynet.uniqueservice
+只需要一个服务, 默认情况下，uniqueservice 是不跨节点的，如果你需要整个网络有唯一的服务，那么可以在调用 uniqueservice 的参数前加一个 true ，表示这是一个全局服务。

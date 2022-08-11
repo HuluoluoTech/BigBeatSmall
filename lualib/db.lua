@@ -2,10 +2,10 @@
     * 用来读取数据库信息
 ]]
 
-function check_username()
+function username()
 end
 
-function check_password()
+function password()
 end
 
 function init()
