@@ -12,12 +12,12 @@ function package_path()
 end
 
 --pack
-local str_pack = function(cmd, msg)
+function str_pack(cmd, msg)
     return table.concat( msg, ",").."\r\n"
 end
 
 --unpack
-local str_unpack = function(msgstr)
+function str_unpack(msgstr)
     local msg = {}
 
     while true do
