@@ -18,7 +18,7 @@ local utils = require("utils")
 * 剥离一个function出来，目前直接closure看着不太舒服，比较乱的感觉
 * 执行逻辑
 ]] 
-function run()
+local function run()
 	print_mascot()
 
 	--初始化当前Node

@@ -1,17 +1,21 @@
+--[[
+	* service模块是对Skynet服务的一种封装。
+]]
+
 local skynet = require "skynet"
 local cluster = require "skynet.cluster"
 
+-- #TODO
+-- 为什么 这个 M 变量名经常出现？？？
 local M = {
-	--类型和id
-	name = "",
-	id = 0,
+	name = "", 	--服务类型
+	id = 0,		--服务id
 
 	--回调函数
 	exit = nil,
 	init = nil,
-	
-	--分发方法
-	resp = {},
+
+	resp = {}, --resp表会存放着消息处理方法
 }
 
 --[[
@@ -35,10 +39,11 @@ local dispatch = function(session, address, cmd, ...)
 		skynet.ret()
 		return
 	end
-	
+
+	--xpcall安全的调用fun方法
 	local ret = table.pack(xpcall(fun, traceback, address, ...))
 	local isok = ret[1]
-	
+
 	if not isok then
 		skynet.ret()
 		return
@@ -54,6 +59,7 @@ function init()
 	end
 end
 
+--两个工具方法，对 本地 、cluster的封装
 function M.call(node, srv, ...)
 	local mynode = skynet.getenv("node")
 	if node == mynode then
@@ -73,10 +79,11 @@ function M.send(node, srv, ...)
 end
 
 function M.start(name, id, ...)
+	print("#service name: "..name..", id: "..tostring(id))
+
 	M.name = name
 	M.id = tonumber(id)
 	skynet.start(init)
 end
-
 
 return M
