@@ -43,6 +43,8 @@ end
     3/ sure_agent
     4/ kick
 ]]
+
+--用于login服务的消息转发，功能是将消息发送到指定fd的客户端
 s.resp.send_by_fd = function(source, fd, msg)
     if not conns[fd] then
         return
@@ -53,6 +55,7 @@ s.resp.send_by_fd = function(source, fd, msg)
 	socket.write(fd, buff)
 end
 
+--用于agent的消息转发，功能是将消息发送给指定玩家id的客户端
 s.resp.send = function(source, playerid, msg)
 	local gplayer = players[playerid]
     if gplayer == nil then
@@ -62,28 +65,30 @@ s.resp.send = function(source, playerid, msg)
     if c == nil then
 		return
     end
-    
+
     s.resp.send_by_fd(nil, c.fd, msg)
 end
 
+--登录成功后确认接口
 s.resp.sure_agent = function(source, fd, playerid, agent)
 	local conn = conns[fd]
 	if not conn then --登陆过程中已经下线
 		skynet.call("agentmgr", "lua", "reqkick", playerid, "未完成登陆即下线")
 		return false
 	end
-	
+
 	conn.playerid = playerid
-	
+
     local gplayer = new_gateplayer()
     gplayer.playerid = playerid
     gplayer.agent = agent
 	gplayer.conn = conn
     players[playerid] = gplayer
-    
+
 	return true
 end
 
+--第一种登出：客户端掉线
 local disconnect = function(fd)
     local c = conns[fd]
     if not c then
@@ -102,6 +107,7 @@ local disconnect = function(fd)
     end
 end
 
+--第二种登出：gateway发送 reqkick 请求给 agentmgr
 s.resp.kick = function(source, playerid)
     local gplayer = players[playerid]
     if not gplayer then
@@ -110,7 +116,7 @@ s.resp.kick = function(source, playerid)
 
     local c = gplayer.conn
 	players[playerid] = nil
-	
+
     if not c then
         return
     end
@@ -126,6 +132,7 @@ local process_msg = function(fd, msgstr)
 
     local conn = conns[fd]
     local playerid = conn.playerid
+
     --尚未完成登录流程
     if not playerid then
         local node = skynet.getenv("node")
@@ -160,6 +167,7 @@ end
 local recv_loop = function(fd)
     socket.start(fd)
     skynet.error("socket connected " ..fd)
+
     local readbuff = ""
     while true do
         local recvstr = socket.read(fd)
@@ -188,13 +196,15 @@ end
 --服务启动后，service模块会调用s.init方法
 function s.init()
     print("#gateway init")
-    
+
     local node = skynet.getenv("node")
     local nodecfg = config_run[node]
     local port = nodecfg.gateway[s.id].port
 
     local listenfd = socket.listen("0.0.0.0", port)
     skynet.error("Listen socket :", "0.0.0.0", port)
+
+    --skynet.fork发起协程，协程recv_loop是个循环
     socket.start(listenfd , connect)
 end
 

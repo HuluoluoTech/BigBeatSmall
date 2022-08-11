@@ -37,6 +37,7 @@ end
 local dispatch = function(session, address, cmd, ...)
 	local fun = M.resp[cmd]
 	if not fun then
+		--将 message size 对应的消息附上当前消息的 session ，以及 skynet.PTYPE_RESPONSE 这个类别，发送给当前消息的来源 source .
 		skynet.ret()
 		return
 	end
@@ -57,6 +58,7 @@ function init()
 	print("#service init()")
 	print("M: "..dump(M))
 
+	--注册消息的处理函数
 	skynet.dispatch("lua", dispatch)
 	if M.init then
 		M.init()

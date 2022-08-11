@@ -1,5 +1,12 @@
 --[[
-	* 登录过程的仲裁服务，控制着登录流程
+	* 管理agent的服务，它是登录过程的仲裁服务，控制着登录流程。
+
+	职责：
+	1、登录仲裁：判断玩家是否在线
+	2、顶替已在线玩家：如果角色已在线，踢下去。
+	3、记录在线信息：将新建的mgrplayer对象记录为STATUS.LOGIN（登录中）状态
+	4、请求nodemgr创建agent服务
+	5、登录完成，设置mgrplayer为STATUS.GAME状态（游戏中），并返回true及agent服务的id
 ]]
 
 local skynet = require "skynet"
@@ -8,21 +15,21 @@ local s = require "service"
 --状态
 STATUS = {
 	LOGIN 	= 2, --登录中
-	GAME 	= 3, --游戏中
+	GAME 	= 3, --游戏中，已经登录
 	LOGOUT 	= 4, --登出中
 }
 
---玩家列表
+--所有玩家的[在线]状态
 local players = {}
 
---玩家类
-function new_mgrplayer()
+--创建玩家
+local function new_mgrplayer()
     local m = {
-        playerid = nil,
-		node = nil,
-        agent = nil,
-		status = nil,
-		gate = nil,
+        playerid 	= nil, --玩家id
+		node 		= nil, --玩家对应gateway和agent所在的节点
+        agent 		= nil, --玩家对应agent服务的id
+		status 		= nil, --状态
+		gate 		= nil, --玩家对应gateway的id
     }
 
     return m
@@ -30,7 +37,7 @@ end
 
 --[[
 	* service.lua 添加 resp 方法
-	1/ relogin
+	1/ reqlogin
 	2/ reqkick
 ]]
 s.resp.reqlogin = function(source, playerid, node, gate)
@@ -54,6 +61,7 @@ s.resp.reqlogin = function(source, playerid, node, gate)
 		local pgate 	= mplayer.gate
 		mplayer.status 	= STATUS.LOGOUT,
 
+		--#TODO: 为什么s.call直接调用，call 方法不是在 M 中？？？
 		s.call(pnode, pagent, "kick")
 		s.send(pnode, pagent, "exit")
 		s.send(pnode, pgate, "send", playerid, {"kick","顶替下线"})
@@ -61,7 +69,8 @@ s.resp.reqlogin = function(source, playerid, node, gate)
 	end
 
 	--上线
-	local player = new_mgrplayer()
+	local player    = new_mgrplayer()
+
 	player.playerid = playerid
 	player.node 	= node
 	player.gate 	= gate
@@ -82,7 +91,7 @@ s.resp.reqkick = function(source, playerid, reason)
 	if not mplayer then
 		return false
 	end
-	
+
 	if mplayer.status ~= STATUS.GAME then
 		return false
 	end
@@ -95,7 +104,7 @@ s.resp.reqkick = function(source, playerid, reason)
 	s.call(pnode, pagent, "kick")
 	s.send(pnode, pagent, "exit")
 	s.send(pnode, pgate, "kick", playerid)
-	
+
 	players[playerid] = nil
 
 	return true
