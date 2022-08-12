@@ -31,6 +31,7 @@ local function run()
 	]]
 	local node_mgr = skynet.newservice("nodemgr","nodemgr", 0)
 	skynet.name("nodemgr", node_mgr)
+	skynet.error("nodemgr service ID: ", node_mgr)
 
 	--集群
 	cluster.reload(config_run.cluster)

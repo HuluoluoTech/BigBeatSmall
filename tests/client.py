@@ -33,9 +33,10 @@ def reqlogin(playerid, password):
     respdata = client.recv(1024)
 
     res = json.loads(respdata)
-    if res["code"] != 0:
-        print("登录失败， 原因: ", res["reason"])
-        return
+    print("res: ", res)
+    # if res['code'] != 0:
+    #     print("登录失败， 原因: ", res["reason"])
+    #     return
       
     # 等一秒钟，模拟用户点击进入游戏按钮
     sleep(1)

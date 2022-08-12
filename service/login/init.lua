@@ -7,63 +7,54 @@ local skynet = require "skynet"
 local s = require "service"
 
 require "response"
+require "db"
 
 --用于存放客户端消息处理方法
 s.client = {}
 s.client.login = function(fd, msg, source)
-	local playerid = tonumber(msg[2])
-	print("登录方法中：")
-	print("playerid: ", playerid)
+	local message_len = #msg
+	if message_len < 3 then
+		local res = response(1, "failed", "参数个数错误")
+		return res
+	end
 
-	local pw = tonumber(msg[3])
-	local gate = source
+	local playerid 	= tonumber(msg[2])
+	local password  = tonumber(msg[3])
+	local gate 		= source
 
-	local node = skynet.getenv("node")
     --校验用户名密码
 	-- 此处要读取数据库，检验密码
-	if pw ~= 123 then
-		return {"login", 1, "密码错误"}
-	else
-		print("密码正确...")
+	if is_password_valid(password) == false then
+		local login_wrong_password = response(1, "failed", "密码错误")
+		return login_wrong_password
 	end
 
 	--发给agentmgr
+	local node = skynet.getenv("node")
 	local isok, agent = skynet.call("agentmgr", "lua", "reqlogin", playerid, node, gate)
-	print("#isok: ", isok)
 	if not isok then
-		return {"login", 1, "请求mgr失败"}
+		local res = response(1, "failed", "请求mgr失败")
+		return res
 	end
 
 	--登录校验成功，通知gateway记录登录状态
 	isok = skynet.call(gate, "lua", "sure_agent", fd, playerid, agent)
-	print("#sure_agent return: ", isok)
 	if not isok then
-		local login_fail_res = {
-			["code"] = 1,
-			["status"] = "failed",
-			["reason"] = "gate注册失败"
-		}
-		local res = json.encode(login_fail_res)
+		local res = response(1, "failed", "gate注册失败")
 		return res
 	end
-
-    skynet.error("login success "..playerid)
 
 	local login_success_res = response(0, "success")
 	local res = json.encode(login_success_res)
     return res
 end
 
---给resp添加client方法
+--Gateway 会调用到该方法
+--skynet.send(agent, "lua", "client", cmd, msg)
 s.resp.client = function(source, fd, cmd, msg)
-	print("#login client")
-	print("#soure	: ", source)
-	print("#fd		: ", fd)
-	print("#cmd		: ", cmd)
-
     if s.client[cmd] then
-        local ret_msg = s.client[cmd]( fd, msg, source)
-        skynet.send(source, "lua", "send_by_fd", fd, ret_msg)
+        local res = s.client[cmd]( fd, msg, source)
+        skynet.send(source, "lua", "send_by_fd", fd, res)
     else
         skynet.error("s.resp.client fail", cmd)
     end

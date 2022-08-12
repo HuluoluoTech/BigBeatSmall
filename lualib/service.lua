@@ -57,7 +57,6 @@ end
 
 function init()
 	print("#service init()")
-	-- print("M: "..dump(M))
 
 	--注册消息的处理函数
 	skynet.dispatch("lua", dispatch)
