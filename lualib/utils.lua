@@ -86,4 +86,3 @@ function count_table(t)
 
     return n
 end
-

@@ -52,14 +52,7 @@ s.resp.send_by_fd = function(source, fd, msg)
         return
     end
 
-    -- local buff = str_pack(msg[1], msg)
-    
-        --debug
-        -- skynet.error("send "..fd.." ["..buff[1].."] {"..table.concat( buff, ",").."}")
-    
-
-    -- local json_res = json.encode(buff)
-	socket.write(fd, msg)
+    socket.write(fd, msg)
 
     print("response 数据写完毕, Data: ", msg)
 end

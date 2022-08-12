@@ -6,6 +6,8 @@ local json = require "json"
 local skynet = require "skynet"
 local s = require "service"
 
+require "response"
+
 --用于存放客户端消息处理方法
 s.client = {}
 s.client.login = function(fd, msg, source)
@@ -36,16 +38,19 @@ s.client.login = function(fd, msg, source)
 	isok = skynet.call(gate, "lua", "sure_agent", fd, playerid, agent)
 	print("#sure_agent return: ", isok)
 	if not isok then
-		return {"login", 1, "gate注册失败"}
+		local login_fail_res = {
+			["code"] = 1,
+			["status"] = "failed",
+			["reason"] = "gate注册失败"
+		}
+		local res = json.encode(login_fail_res)
+		return res
 	end
 
     skynet.error("login success "..playerid)
 
-	local login_res = {
-		["code"] = 0,
-		["status"] = "success"
-	}
-	local res = json.encode(login_res)
+	local login_success_res = response(0, "success")
+	local res = json.encode(login_success_res)
     return res
 end
 
@@ -58,7 +63,6 @@ s.resp.client = function(source, fd, cmd, msg)
 
     if s.client[cmd] then
         local ret_msg = s.client[cmd]( fd, msg, source)
-		print("#Response Message: ", ret_msg)
         skynet.send(source, "lua", "send_by_fd", fd, ret_msg)
     else
         skynet.error("s.resp.client fail", cmd)
