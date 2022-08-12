@@ -1,18 +1,23 @@
 --[[
-* service 的入口函数
+	* main 服务， 主要职责
+	1、启动nodemgr
+	2、启动cluster
+	3、启动gateway
+	4、启动login
+	5、启动agentmgr
+	6、启动scene
 ]]
-
--- import 必要的 package
 local skynet = require "skynet"
 local skynet_manager = require "skynet.manager"
 local cluster = require "skynet.cluster"
 local config_run = require "config_run"
 
+-- 打印吉祥物
 require("utils")
 print_mascot()
 
 --[[
-* 剥离一个function出来，目前直接closure看着不太舒服，比较乱的感觉
+* 剥离一个function出来，所有的closure看着比较乱的感觉，包括Rust的！
 * 执行逻辑
 ]]
 local function run()
@@ -20,13 +25,9 @@ local function run()
 	local current_node = skynet.getenv("node")
 	local node_cfg = config_run[current_node]
 
-	--节点管理
 	--[[
-		* API: newservice
-
-		newservice(name, ...) 启动一个名为 name 的新服务。
-		- name 是脚本的名字（不用写 .lua 后缀）
-		- 这是一个阻塞 API
+		* 节点管理
+		* nodemgr : node = 1 : 1
 	]]
 	local node_mgr = skynet.newservice("nodemgr","nodemgr", 0)
 	skynet.name("nodemgr", node_mgr)
@@ -69,5 +70,5 @@ local function run()
 	skynet.exit()
 end
 
---开启服务
+--服务入口
 skynet.start(run)
