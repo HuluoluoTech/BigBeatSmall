@@ -81,11 +81,21 @@ s.resp.sure_agent = function(source, fd, playerid, agent)
 
 	conn.playerid = playerid
 
+
     local gplayer = new_gateplayer()
     gplayer.playerid = playerid
     gplayer.agent = agent
 	gplayer.conn = conn
+
+    --登录成功后，记录玩家信息
     players[playerid] = gplayer
+
+    print("## 登录成功新建player: ", players[playerid].playerid)
+    print("目前在线的玩家个数: ", count_table(players))
+    for key, value in pairs(players) do
+        -- TODO  
+        print("玩家ID: ", key)
+    end
 
 	return true
 end
@@ -129,6 +139,7 @@ s.resp.kick = function(source, playerid)
 end
 
 local process_msg = function(fd, msgstr)
+    print("#gateway fd: ", fd)
     print("#gateway proccess_msg msgstr: "..msgstr)
 
     local cmd, msg = str_unpack(msgstr)
@@ -139,7 +150,7 @@ local process_msg = function(fd, msgstr)
 
     local conn = conns[fd]
     local playerid = conn.playerid
-    print("#playerid: ")
+    print("#playerid: ", playerid)
 
     --尚未完成登录流程
     if not playerid then

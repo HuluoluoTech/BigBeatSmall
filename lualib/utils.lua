@@ -65,3 +65,24 @@ function dump(o)
        return tostring(o)
     end
  end
+
+ ----计算table的个数
+ function table_it(v)
+    if type(v) ~= "table" then
+        v = {}
+    end
+
+    return v
+end
+
+function count_table(t)
+    local n = 0
+    local t = table_it(t)
+    for k, _  in pairs(t) do
+        -- n += 1
+        -- Lua 没有 += 
+        n = n + 1
+    end
+
+    return n
+end

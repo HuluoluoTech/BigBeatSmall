@@ -11,12 +11,14 @@ s.gate = nil --用于保存玩家对应gateway的id
 require "scene"
 --登录后客户端发送“work”协议，s.client.work方法将被调用。
 s.client.work = function(msg)
+	print("#agent working......")
 	s.data.coin = s.data.coin + 1
 	return {"work", s.data.coin}
 end
 
 -- service.lua resp 添加方法
 s.resp.client = function(source, cmd, msg)
+	print("#agent cmd => ", cmd)
     s.gate = source
     if s.client[cmd] then
 		local ret_msg = s.client[cmd]( msg, source)

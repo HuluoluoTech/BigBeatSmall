@@ -34,7 +34,7 @@ function traceback(err)
 end
 
 local dispatch = function(session, address, cmd, ...)
-	print("#service dispatch...")
+	print("#service dispatch address=>cmd: ", address, "=>"..cmd)
 
 	local fun = M.resp[cmd]
 	if not fun then

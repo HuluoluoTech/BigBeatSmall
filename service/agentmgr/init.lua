@@ -41,13 +41,13 @@ end
 	2/ reqkick
 ]]
 s.resp.reqlogin = function(source, playerid, node, gate)
-	print("#agentmgr reqlogin")
+	print("#agentmgr reqlogin playerid: ", playerid)
 
 	local mplayer = players[playerid]
-
 	--登陆过程禁止顶替
 	if mplayer and mplayer.status == STATUS.LOGOUT then
-		skynet.error("reqlogin fail, at status LOGOUT " ..playerid )
+		print("不能顶替掉。。。")
+		skynet.error("reqlogin fail, at status LOGOUT " ..playerid)
 		return false
 	end
 
@@ -58,6 +58,7 @@ s.resp.reqlogin = function(source, playerid, node, gate)
 
 	--在线，顶替
 	if mplayer then
+		print("#同一个角色，踢掉 playerid : ", mplayer.playerid)
 		local pnode 	= mplayer.node
 		local pagent 	= mplayer.agent
 		local pgate 	= mplayer.gate
@@ -92,6 +93,8 @@ s.resp.reqlogin = function(source, playerid, node, gate)
 end
 
 s.resp.reqkick = function(source, playerid, reason)
+	print("#agentmgr reqkick reason: ", reason)
+	
 	local mplayer = players[playerid]
 	if not mplayer then
 		return false
