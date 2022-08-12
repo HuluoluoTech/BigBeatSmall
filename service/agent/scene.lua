@@ -4,6 +4,8 @@ local s = require "service"
 local config_run = require "config_run"
 local mynode = skynet.getenv("node")
 
+require "response"
+
 s.snode = nil --scene_node
 s.sname = nil --scene_id
 
@@ -12,31 +14,37 @@ local function random_scene()
     local nodes = {}
     for i, v in pairs(config_run.scene) do
         table.insert(nodes, i)
+
         if config_run.scene[mynode] then
             table.insert(nodes, mynode)
         end
     end
-    local idx = math.random( 1, #nodes)
+
+    local idx = math.random(1, #nodes)
     local scenenode = nodes[idx]
+
     --具体场景
     local scenelist = config_run.scene[scenenode]
-    local idx = math.random( 1, #scenelist)
+    idx = math.random( 1, #scenelist)
     local sceneid = scenelist[idx]
+
     return scenenode, sceneid
-end
+end 
 
 s.client.enter = function(msg)
-    print("#agent 进入游戏 msg: ", msg)
+    print("#agent 进入游戏")
 
     if s.sname then
-        return {"enter",1,"已在场景"}
+        local res = response(1, "failed", "已在场景")
+        return res
     end
 
     local snode, sid = random_scene()
     local sname = "scene"..sid
     local isok = s.call(snode, sname, "enter", s.id, mynode, skynet.self())
     if not isok then
-        return {"enter",1,"进入失败"}
+        local res = response(1, "failed", "进入失败")
+        return res
     end
 
     s.snode = snode
@@ -50,8 +58,10 @@ s.client.shift  = function(msg)
     if not s.sname then
         return
     end
+
     local x = msg[2] or 0
     local y = msg[3] or 0
+
     s.call(s.snode, s.sname, "shift", s.id, x, y)
 end
 

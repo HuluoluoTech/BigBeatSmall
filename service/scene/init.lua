@@ -1,5 +1,6 @@
 local skynet = require "skynet"
 local s = require "service"
+require "response"
 
 local balls = {} --[playerid] = ball
 local foods = {} --[id] = food
@@ -63,6 +64,8 @@ end
 
 --进入
 s.resp.enter = function(source, playerid, node, agent)
+    print("#Secne....")
+
     if balls[playerid] then
         return false
     end
@@ -79,13 +82,13 @@ s.resp.enter = function(source, playerid, node, agent)
     balls[playerid] = b
 
     --回应
-    local ret_msg = {"enter",0,"进入成功"}
-    s.send(b.node, b.agent, "send", ret_msg)
+    local res = response(0, "success", "进入场景成功")
+    s.send(b.node, b.agent, "send", res)
 
     --发战场信息
     s.send(b.node, b.agent, "send", balllist_msg())
     s.send(b.node, b.agent, "send", foodlist_msg())
-    
+
     return true
 end
 
