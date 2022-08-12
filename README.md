@@ -1,7 +1,7 @@
 # GMMO 
 [GMMO](https://github.com/HuluoluoTech/gmmo) is shortened form of General Massively Multiplayer Online. 
 
-WIP: 功能继续完善中
+status : pre-release
 
 ## Usage
 [Tutorial](./docs/tutorial.md)
