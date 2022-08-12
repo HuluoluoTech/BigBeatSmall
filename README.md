@@ -9,3 +9,6 @@ WIP: 功能继续完善中
 ### Link
 * [million_game_server](https://github.com/luopeiyu/million_game_server)
 * [skynet api](https://github.com/cloudwu/skynet/wiki/LuaAPI)
+
+### 说明
+基于[million_game_server](https://github.com/luopeiyu/million_game_server)的完善和改写。
