@@ -2,6 +2,7 @@
 	* 登录逻辑
 ]]
 
+local json = require "json"
 local skynet = require "skynet"
 local s = require "service"
 
@@ -40,7 +41,12 @@ s.client.login = function(fd, msg, source)
 
     skynet.error("login success "..playerid)
 
-    return {"login", 0, "登陆成功"}
+	local login_res = {
+		["code"] = 0,
+		["status"] = "success"
+	}
+	local res = json.encode(login_res)
+    return res
 end
 
 --给resp添加client方法

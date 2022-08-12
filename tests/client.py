@@ -31,9 +31,12 @@ def reqlogin(playerid, password):
     client = new_client()
     client.send(reqdata.encode('utf-8'))
     respdata = client.recv(1024)
-    # print("登录返回： ", json.dumps(respdata).decode("utf-8"))
-    print("登录返回： ", respdata.decode("utf-8"))
 
+    res = json.loads(respdata)
+    if res["code"] != 0:
+        print("登录失败， 原因: ", res["reason"])
+        return
+      
     # 等一秒钟，模拟用户点击进入游戏按钮
     sleep(1)
 

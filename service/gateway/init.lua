@@ -6,7 +6,9 @@ local skynet = require "skynet"
 local socket = require "skynet.socket"
 local config_run = require "config_run"
 local s = require "service" --import 的是 'service.lua', 在 lualib 中
-local utils = require "utils" --import utils.lua, 包含了 pack / unpack 工具方法
+local json = require "json"
+
+require "utils" --import utils.lua, 包含了 pack / unpack 工具方法
 
 -- 用于保存客户端连接信息
 local conns = {} --[socket_id] = conn
@@ -50,11 +52,16 @@ s.resp.send_by_fd = function(source, fd, msg)
         return
     end
 
-    local buff = str_pack(msg[1], msg)
-    skynet.error("send "..fd.." ["..msg[1].."] {"..table.concat( msg, ",").."}")
-	socket.write(fd, buff)
+    -- local buff = str_pack(msg[1], msg)
+    
+        --debug
+        -- skynet.error("send "..fd.." ["..buff[1].."] {"..table.concat( buff, ",").."}")
+    
 
-    print("response 数据写完毕, Data: ", buff)
+    -- local json_res = json.encode(buff)
+	socket.write(fd, msg)
+
+    print("response 数据写完毕, Data: ", msg)
 end
 
 --用于agent的消息转发，功能是将消息发送给指定玩家id的客户端

@@ -26,17 +26,22 @@ local function random_scene()
 end
 
 s.client.enter = function(msg)
+    print("#agent 进入游戏 msg: ", msg)
+
     if s.sname then
         return {"enter",1,"已在场景"}
     end
+
     local snode, sid = random_scene()
     local sname = "scene"..sid
     local isok = s.call(snode, sname, "enter", s.id, mynode, skynet.self())
     if not isok then
         return {"enter",1,"进入失败"}
     end
+
     s.snode = snode
     s.sname = sname
+
     return nil
 end
 
