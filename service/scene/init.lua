@@ -1,62 +1,25 @@
 local skynet = require "skynet"
 local s = require "service"
 require "response"
+require "entity"
+require "utils"
+require "protocol"
 
-local balls = {} --[playerid] = ball
-local foods = {} --[id] = food
+--玩家 <=> ball 的映射关系
+--[playerid] = ball
+local balls = {}
+
+--食物的映射
+--[id] = food
+local foods = {}
+
 local food_maxid = 0
 local food_count = 0
 
---球
-function ball()
-    local m = {
-        playerid = nil,
-        node = nil,
-        agent = nil,
-        x = math.random( 0, 100),
-        y = math.random( 0, 100),
-        size = 2,
-        speedx = 0,
-        speedy = 0,
-    }
-    return m
-end
-
---食物
-function food()
-    local m = {
-        id = nil,
-        x = math.random( 0, 100),
-        y = math.random( 0, 100),
-    }
-    return m
-end
-
---球列表
-local function balllist_msg()
-    local msg = {"balllist"}
-    for i, v in pairs(balls) do
-        table.insert( msg, v.playerid )
-        table.insert( msg, v.x )
-        table.insert( msg, v.y )
-        table.insert( msg, v.size )
-    end
-    return msg
-end
-
---食物列表
-local function foodlist_msg()
-    local msg = {"foodlist"}
-    for i, v in pairs(foods) do
-        table.insert( msg, v.id )
-        table.insert( msg, v.x )
-        table.insert( msg, v.y )
-    end
-    return msg
-end
+local max_food_nums = 50
 
 --广播
-function broadcast(msg)
+local function broadcast(msg)
     for i, v in pairs(balls) do
         s.send(v.node, v.agent, "send", msg)
     end
@@ -67,27 +30,28 @@ s.resp.enter = function(source, playerid, node, agent)
     print("#Secne....")
 
     if balls[playerid] then
+        skynet.error("已经有了映射关系,不用再次创建Ball对象")
         return false
     end
-    local b = ball()
-    b.playerid = playerid
-    b.node = node
-    b.agent = agent
 
-    --广播
+    local b = new_ball(playerid)
+    --新建Ball，马上进行广播
     local entermsg = {"enter", playerid, b.x, b.y, b.size}
     broadcast(entermsg)
 
-    --记录
-    balls[playerid] = b
+    b.node = node
+    b.agent = agent
 
     --回应
     local res = response(0, "success", "进入场景成功")
     s.send(b.node, b.agent, "send", res)
 
+    --记录映射关系
+    balls[playerid] = b
+
     --发战场信息
-    s.send(b.node, b.agent, "send", balllist_msg())
-    s.send(b.node, b.agent, "send", foodlist_msg())
+    s.send(b.node, b.agent, "send", protocol_balllist(balls))
+    s.send(b.node, b.agent, "send", protocol_foodlist(foods))
 
     return true
 end
@@ -113,51 +77,67 @@ s.resp.shift = function(source, playerid, x, y)
     b.speedy = y
 end
 
-function food_update()
-    if food_count > 50 then
+local function food_update()
+    if food_count > max_food_nums then
+        skynet.error("最多生成50个Food")
         return
     end
 
+    --[[
+        #TODO: 这个真巧妙
+
+        计算一个0到100的随机数，只有大于等于98才
+        往下执行，即往下执行的概率是1/50。由于主循环每0.2秒调用一次
+        food_update，因此平均下来每10秒会生成一个食物。
+    ]]
     if math.random( 1,100) < 98 then
         return
     end
 
     food_maxid = food_maxid + 1
     food_count = food_count + 1
-    local f = food()
-    f.id = food_maxid
+
+    local f = new_food(food_maxid)
     foods[f.id] = f
 
-    local msg = {"addfood", f.id, f.x, f.y}
+    -- local msg = {"addfood", f.id, f.x, f.y}
+    local msg = protocol_addfood(f)
     broadcast(msg)
 end
 
-function move_update()
+local function move_update()
     for i, v in pairs(balls) do
         v.x = v.x + v.speedx * 0.2
         v.y = v.y + v.speedy * 0.2
         if v.speedx ~= 0 or v.speedy ~= 0 then
-            local msg = {"move", v.playerid, v.x, v.y}
+            local msg = protocol_move(v)
             broadcast(msg)
         end
     end
 end
 
-function eat_update()
-    for pid, b in pairs(balls) do
-        for fid, f in pairs(foods) do
-            if (b.x-f.x)^2 + (b.y-f.y)^2 < b.size^2 then
+--[[
+    * 遍历所有的球和食物，并根据两点间距离公式
+    * 如果发生碰撞，即视为吞下食物
+]]
+local function eat_update()
+    for playerid, b in pairs(balls) do
+        for foodid, f in pairs(foods) do
+            if is_collision(b, f) then
                 b.size = b.size + 1
+
                 food_count = food_count - 1
-                local msg = {"eat", b.playerid, fid, b.size}
+
+                local msg = protocol_eatfood(b, foodid)
                 broadcast(msg)
-                foods[fid] = nil --warm
+
+                foods[foodid] = nil
             end
         end
     end
 end
 
-function update(frame)
+local function update(...)
     food_update()
     move_update()
     eat_update()
@@ -166,21 +146,25 @@ function update(frame)
 end
 
 s.init = function()
+    --skynet.fork开启一个协程
     skynet.fork(function()
         --保持帧率执行
         local stime = skynet.now()
         local frame = 0
         while true do
             frame = frame + 1
+
             local isok, err = pcall(update, frame)
             if not isok then
                 skynet.error(err)
             end
+
             local etime = skynet.now()
-            local waittime = frame*20 - (etime - stime)
+            local waittime = frame * 20 - (etime - stime)
             if waittime <= 0 then
                 waittime = 2
             end
+
             skynet.sleep(waittime)
         end
     end)

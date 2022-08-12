@@ -86,3 +86,12 @@ function count_table(t)
 
     return n
 end
+
+--球体碰撞检测
+function is_collision(balla, ballb)
+    if (balla.x-ballb.x)^2 + (balla.y-ballb.y)^2 < balla.size^2 then
+        return true
+    end
+
+    return false
+end

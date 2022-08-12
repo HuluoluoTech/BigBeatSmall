@@ -48,8 +48,6 @@ def reqlogin(playerid, password):
     else:
         print("登录成功！")
     
-    return
-
     # 等一秒钟，模拟用户点击进入游戏按钮
     sleep(1)
 
