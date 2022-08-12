@@ -33,8 +33,8 @@ local function run()
 		- name 是脚本的名字（不用写 .lua 后缀）
 		- 这是一个阻塞 API
 	]]
-	local node_mgr = skynet.newservice("nodemgr","node_mgr", 0)
-	skynet.name("node_mgr", node_mgr)
+	local node_mgr = skynet.newservice("nodemgr","nodemgr", 0)
+	skynet.name("nodemgr", node_mgr)
 
 	--集群
 	cluster.reload(config_run.cluster)

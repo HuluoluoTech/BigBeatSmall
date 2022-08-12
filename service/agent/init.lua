@@ -1,11 +1,15 @@
+--[[
+	* 玩家登录后，gateway会将客户端协议转发给agent, 也就是游戏逻辑部分
+]]
+
 local skynet = require "skynet"
 local s = require "service"
 
 s.client = {}
 s.gate = nil --用于保存玩家对应gateway的id
 
--- require "scene"
-
+require "scene"
+--登录后客户端发送“work”协议，s.client.work方法将被调用。
 s.client.work = function(msg)
 	s.data.coin = s.data.coin + 1
 	return {"work", s.data.coin}
@@ -17,7 +21,7 @@ s.resp.client = function(source, cmd, msg)
     if s.client[cmd] then
 		local ret_msg = s.client[cmd]( msg, source)
 		if ret_msg then
-			skynet.send(source, "lua", "send", s.id, ret_msg)
+			skynet.send(source, "lua", "send", s.id, ret_msg) 
 		end
     else
         skynet.error("s.resp.client fail", cmd)
@@ -31,6 +35,8 @@ s.resp.kick = function(source)
 end
 
 s.resp.exit = function(source)
+	print("#agent exit.")
+
 	skynet.exit()
 end
 
@@ -42,7 +48,7 @@ s.init = function( )
 	--playerid = s.id
 	--在此处加载角色数据
 	skynet.sleep(200)
-	
+
 	s.data = {
 		coin = 100,
 		hp = 200,

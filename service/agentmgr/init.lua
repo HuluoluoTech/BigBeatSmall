@@ -41,6 +41,8 @@ end
 	2/ reqkick
 ]]
 s.resp.reqlogin = function(source, playerid, node, gate)
+	print("#agentmgr reqlogin")
+
 	local mplayer = players[playerid]
 
 	--登陆过程禁止顶替
@@ -79,7 +81,10 @@ s.resp.reqlogin = function(source, playerid, node, gate)
 
 	players[playerid] = player
 
+	print("#创建新的 player, and status: ", player.status)
+
 	local agent = s.call(node, "nodemgr", "newservice", "agent", "agent", playerid)
+	print("#新的agent创建成功。。。")
 	player.agent 	= agent
 	player.status 	= STATUS.GAME
 

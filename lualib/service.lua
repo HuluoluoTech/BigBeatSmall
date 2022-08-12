@@ -4,7 +4,6 @@
 
 local skynet = require "skynet"
 local cluster = require "skynet.cluster"
-local utils = require "utils"
 
 -- #TODO
 -- 为什么 这个 M 变量名经常出现？？？
@@ -35,6 +34,8 @@ function traceback(err)
 end
 
 local dispatch = function(session, address, cmd, ...)
+	print("#service dispatch...")
+
 	local fun = M.resp[cmd]
 	if not fun then
 		--将 message size 对应的消息附上当前消息的 session ，以及 skynet.PTYPE_RESPONSE 这个类别，发送给当前消息的来源 source .
@@ -67,9 +68,14 @@ end
 
 --两个工具方法，对 本地 、cluster的封装
 function M.call(node, srv, ...)
+	print("#service CALLL service: ", srv)
+
 	local mynode = skynet.getenv("node")
+	print("#mynode: ", mynode)
 	if node == mynode then
+		print("#调用 srv")
 		return skynet.call(srv, "lua", ...)
+		-- return skynet.send(srv, "lua", ...)
 	else
 		return cluster.call(node, srv, ...)
 	end

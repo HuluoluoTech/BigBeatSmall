@@ -53,6 +53,8 @@ s.resp.send_by_fd = function(source, fd, msg)
     local buff = str_pack(msg[1], msg)
     skynet.error("send "..fd.." ["..msg[1].."] {"..table.concat( msg, ",").."}")
 	socket.write(fd, buff)
+
+    print("response 数据写完毕。")
 end
 
 --用于agent的消息转发，功能是将消息发送给指定玩家id的客户端
@@ -127,19 +129,34 @@ s.resp.kick = function(source, playerid)
 end
 
 local process_msg = function(fd, msgstr)
+    print("#gateway proccess_msg msgstr: "..msgstr)
+
     local cmd, msg = str_unpack(msgstr)
-    skynet.error("recv "..fd.." ["..cmd.."] {"..table.concat( msg, ",").."}")
+    skynet.error("#after unpack, recv "..fd.." ["..cmd.."] {"..table.concat( msg, ",").."}")
+
+    print("#msg: ", dump(msg))
+    print("#conns:", dump(conns))
 
     local conn = conns[fd]
     local playerid = conn.playerid
+    print("#playerid: ")
 
     --尚未完成登录流程
     if not playerid then
+        print("未登录状态， 准备登录...")
         local node = skynet.getenv("node")
         local nodecfg = config_run[node]
         local loginid = math.random(1, #nodecfg.login)
+        --#TODO 为什么把 loginid 频道这里？？？
+        --main创建服务的时候的login服务名称
         local login = "login"..loginid
-		skynet.send(login, "lua", "client", fd, cmd, msg)
+
+        print("#登录参数:")
+        print("#login: ", login)
+        print("#cmd: ", cmd)
+        print("#msg: ", dump(msg))
+        print("#登录参数End")
+		skynet.send(login, "lua", "client", fd, cmd, msg, 3)
     --完成登录流程
     else
         local gplayer = players[playerid]
@@ -148,11 +165,15 @@ local process_msg = function(fd, msgstr)
         --client是自定义的消息名
 		skynet.send(agent, "lua", "client", cmd, msg)
     end
+
+    print("#proccess msg end")
 end
 
 local process_buff = function(fd, readbuff)
     while true do
-        local msgstr, rest = string.match( readbuff, "(.-)\r\n(.*)")
+        -- local msgstr, rest = string.match( readbuff, "(.-)\r\n(.*)")
+        local msgstr, rest = string.match( readbuff, "(.-)#(.*)")
+        print("#proccess buff, msgstr / rest: ", msgstr, rest)
         if msgstr then
             readbuff = rest
             process_msg(fd, msgstr)
@@ -172,8 +193,10 @@ local recv_loop = function(fd)
     while true do
         local recvstr = socket.read(fd)
         if recvstr then
-            readbuff = readbuff..recvstr
+        print("#recvstr: "..recvstr)
+        readbuff = readbuff..recvstr
             readbuff = process_buff(fd, readbuff)
+            print("#recv_loop readbuff: "..readbuff.."END")
         else
             skynet.error("socket close " ..fd)
 			disconnect(fd)
@@ -202,7 +225,7 @@ function s.init()
     local port = nodecfg.gateway[s.id].port
 
     local listenfd = socket.listen("0.0.0.0", port)
-    skynet.error("Listen socket :", "0.0.0.0", port)
+    skynet.error("Gateway Listen socket :", "0.0.0.0", port)
 
     --skynet.fork发起协程，协程recv_loop是个循环
     socket.start(listenfd , connect)
