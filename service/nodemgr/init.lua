@@ -7,10 +7,7 @@
 local skynet = require "skynet"
 local s = require "service"
 
--- service.lua resp 再添加一个方法 
 s.resp.newservice = function(source, name, ...)
-	print("#nodemgr.newservice source: "..source)
-
 	local srv = skynet.newservice(name, ...)
 	return srv
 end

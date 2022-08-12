@@ -54,7 +54,7 @@ s.resp.send_by_fd = function(source, fd, msg)
     skynet.error("send "..fd.." ["..msg[1].."] {"..table.concat( msg, ",").."}")
 	socket.write(fd, buff)
 
-    print("response 数据写完毕。")
+    print("response 数据写完毕, Data: ", buff)
 end
 
 --用于agent的消息转发，功能是将消息发送给指定玩家id的客户端
