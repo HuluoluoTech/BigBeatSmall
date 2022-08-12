@@ -81,18 +81,17 @@ s.resp.sure_agent = function(source, fd, playerid, agent)
 
 	conn.playerid = playerid
 
-
     local gplayer = new_gateplayer()
     gplayer.playerid = playerid
-    gplayer.agent = agent
-	gplayer.conn = conn
+    gplayer.agent    = agent
+	gplayer.conn     = conn
 
     --登录成功后，记录玩家信息
     players[playerid] = gplayer
 
     print("## 登录成功新建player: ", players[playerid].playerid)
     print("目前在线的玩家个数: ", count_table(players))
-    for key, value in pairs(players) do
+    for key, _ in pairs(players) do
         -- TODO  
         print("玩家ID: ", key)
     end
@@ -167,7 +166,7 @@ local process_msg = function(fd, msgstr)
         print("#cmd: ", cmd)
         print("#msg: ", dump(msg))
         print("#登录参数End")
-		skynet.send(login, "lua", "client", fd, cmd, msg, 3)
+		skynet.send(login, "lua", "client", fd, cmd, msg)
     --完成登录流程
     else
         local gplayer = players[playerid]

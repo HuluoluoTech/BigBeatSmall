@@ -31,30 +31,28 @@ s.client.login = function(fd, msg, source)
 		return {"login", 1, "请求mgr失败"}
 	end
 
-	--回应gate
+	--登录校验成功，通知gateway记录登录状态
 	isok = skynet.call(gate, "lua", "sure_agent", fd, playerid, agent)
 	print("#sure_agent return: ", isok)
 	if not isok then
 		return {"login", 1, "gate注册失败"}
 	end
 
-    skynet.error("login succ "..playerid)
+    skynet.error("login success "..playerid)
 
     return {"login", 0, "登陆成功"}
 end
 
 --给resp添加client方法
-s.resp.client = function(source, fd, cmd, msg, dm)
-	print("#login client :")
-	print("#soure: ", source)
-	print("#fd: ", fd)
-	print("#cmd: ", cmd)
-	-- print("#msg: ", dump(msg))
-	print("#dm: ", dm)
+s.resp.client = function(source, fd, cmd, msg)
+	print("#login client")
+	print("#soure	: ", source)
+	print("#fd		: ", fd)
+	print("#cmd		: ", cmd)
 
     if s.client[cmd] then
         local ret_msg = s.client[cmd]( fd, msg, source)
-		print("#ret_msg: ", ret_msg)
+		print("#Response Message: ", ret_msg)
         skynet.send(source, "lua", "send_by_fd", fd, ret_msg)
     else
         skynet.error("s.resp.client fail", cmd)
