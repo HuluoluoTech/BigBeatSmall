@@ -1,3 +1,4 @@
+from base64 import encode
 import socket
 
 import json
@@ -15,6 +16,13 @@ password = "123"
 # login 登录协议： login,playerid,password#
 # enter 进入游戏： enter#
 # 
+# 战场信息协议: 
+# balllist, playerID, x, y#
+# foodlist, FoodID, x, y#
+# AddFood, FoodID, x, y#
+# client => shift, x, y# | server: move, playerID, x, y#
+# eat, playerID, foodID, playerNewSize#
+# leave, playerID# 
 #
 ###
 
@@ -32,12 +40,16 @@ def reqlogin(playerid, password):
     client.send(reqdata.encode('utf-8'))
     respdata = client.recv(1024)
 
-    res = json.loads(respdata)
-    print("res: ", res)
-    # if res['code'] != 0:
-    #     print("登录失败， 原因: ", res["reason"])
-    #     return
-      
+    res = json.loads(json.loads(respdata))
+    print("res: ", type(res), res, res["code"])
+    if res["code"] != 0:
+        print("登录失败， 原因: ", res["reason"])
+        return
+    else:
+        print("登录成功！")
+    
+    return
+
     # 等一秒钟，模拟用户点击进入游戏按钮
     sleep(1)
 
