@@ -1,6 +1,7 @@
 --[[
     * 通信协议
 ]]
+local s = require "service"
 
 --[[
     balllist, playerID, x, y
@@ -52,4 +53,22 @@ end
 function protocol_move(ball)
     local msg = {"move", ball.playerid, ball.x, ball.y}
     return msg
+end
+
+--[[
+    leave, playerID
+]]
+function protocol_leave(playerid)
+    local msg = {"leave", playerid}
+    return msg
+end
+
+--[[
+    广播协议，向所有玩家（playerid）发送msg
+]]
+--广播
+function broadcast(balls, msg)
+    for i, v in pairs(balls) do
+        s.send(v.node, v.agent, "send", msg)
+    end
 end

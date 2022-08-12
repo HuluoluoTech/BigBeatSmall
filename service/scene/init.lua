@@ -19,11 +19,11 @@ local food_count = 0
 local max_food_nums = 50
 
 --广播
-local function broadcast(msg)
-    for i, v in pairs(balls) do
-        s.send(v.node, v.agent, "send", msg)
-    end
-end
+-- local function broadcast(msg)
+--     for i, v in pairs(balls) do
+--         s.send(v.node, v.agent, "send", msg)
+--     end
+-- end
 
 --进入
 s.resp.enter = function(source, playerid, node, agent)
@@ -37,7 +37,7 @@ s.resp.enter = function(source, playerid, node, agent)
     local b = new_ball(playerid)
     --新建Ball，马上进行广播
     local entermsg = {"enter", playerid, b.x, b.y, b.size}
-    broadcast(entermsg)
+    broadcast(balls, entermsg)
 
     b.node = node
     b.agent = agent
@@ -56,15 +56,16 @@ s.resp.enter = function(source, playerid, node, agent)
     return true
 end
 
---退出
+--退出scene
 s.resp.leave = function(source, playerid)
     if not balls[playerid] then
+        skynet.error("playerid => "..playerid.."已离开")
         return false
     end
     balls[playerid] = nil
 
-    local leavemsg = {"leave", playerid}
-    broadcast(leavemsg)
+    local msg = protocol_leave(playerid)
+    broadcast(balls, msg)
 end
 
 --改变速度
@@ -100,9 +101,8 @@ local function food_update()
     local f = new_food(food_maxid)
     foods[f.id] = f
 
-    -- local msg = {"addfood", f.id, f.x, f.y}
     local msg = protocol_addfood(f)
-    broadcast(msg)
+    broadcast(balls, msg)
 end
 
 local function move_update()
@@ -111,7 +111,7 @@ local function move_update()
         v.y = v.y + v.speedy * 0.2
         if v.speedx ~= 0 or v.speedy ~= 0 then
             local msg = protocol_move(v)
-            broadcast(msg)
+            broadcast(balls, msg)
         end
     end
 end
@@ -119,6 +119,8 @@ end
 --[[
     * 遍历所有的球和食物，并根据两点间距离公式
     * 如果发生碰撞，即视为吞下食物
+
+    #TODO: 嵌套 for 不行
 ]]
 local function eat_update()
     for playerid, b in pairs(balls) do
@@ -129,7 +131,7 @@ local function eat_update()
                 food_count = food_count - 1
 
                 local msg = protocol_eatfood(b, foodid)
-                broadcast(msg)
+                broadcast(balls, msg)
 
                 foods[foodid] = nil
             end
