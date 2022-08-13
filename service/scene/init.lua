@@ -79,7 +79,6 @@ end
 
 local function food_update()
     if food_count > max_food_nums then
-        skynet.error("最多生成50个Food")
         return
     end
 
