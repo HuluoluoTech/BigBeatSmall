@@ -7,4 +7,6 @@
 - [ ] add internal error and outer error(which would be dispose to frontend/client)
 - [ ] add ranking list
 - [ ] add AOI algorithm
+- [ ] add chat
+- [ ] add mail
 
