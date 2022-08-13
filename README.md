@@ -6,6 +6,12 @@ status : pre-release
 ## Usage
 [Tutorial](./docs/tutorial.md)
 
+### Client Output
+```python
+python3 client.py
+```
+![image](./docs/screenshot/play_loop.png)
+
 ### Link
 * [million_game_server](https://github.com/luopeiyu/million_game_server)
 * [skynet api](https://github.com/cloudwu/skynet/wiki/LuaAPI)
