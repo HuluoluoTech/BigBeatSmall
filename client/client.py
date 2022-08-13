@@ -47,17 +47,17 @@ def new_client():
 #
 ###############################################################################
 def req_login(client, playerid, password):
-    print("[Login] 娱乐一下，登录游戏看看...")
+    print_align("[Login]", "娱乐一下，登录游戏看看...")
     protocol = protocol_login(playerid, password)
     client.send(protocol.encode('utf-8'))
     respdata = client.recv(1024)
 
     res = json.loads(respdata)
     if res["code"] != 0:
-        print("[Login] Woopo... 登录失败了，因为: ", res["reason"])
+        print_align("[Login]", "Woopo... 登录失败了，因为: " + res["reason"])
         return False
     else:
-        print("[Login] 恭喜，网络还行，登录成功了， 马上进入游戏开始Play吧...")
+        print_align("[Login]", "恭喜，网络还行，登录成功了， 马上进入游戏开始Play吧...")
         return True
 
 def req_enter(client):
@@ -66,17 +66,17 @@ def req_enter(client):
     respdata = client.recv(1024)
     res = json.loads(respdata)
     if res["code"] != 0:
-        print("[Enter] 进入游戏失败了，因为: ", res["reason"])
+        print_align("[Enter]", "进入游戏失败了，因为: " + res["reason"])
         return False
     else:
-        print("[Enter] 进入游戏成功, 开始大玩儿一场吧, Let's Rocket it!")
+        print_align("[Enter]", "进入游戏成功, 开始大玩儿一场吧, Let's Rocket it!")
         return True
 
 def enter(client, playerid):
     # 等一秒钟，模拟用户点击进入游戏按钮
     sleep(1)
 
-    print("[Enter] 玩家 ", playerid, " 快速点击了 [进入游戏] 按钮， 迫不及待了...")
+    print_align("[Enter]", "玩家 " + str(playerid) + " 快速点击了 [进入游戏] 按钮， 迫不及待了...")
 
     ret = req_enter(client)
     if ret == False:
@@ -86,13 +86,13 @@ def enter(client, playerid):
 
 def simulate_play():
     elpase = 5 # 等一下，就当在play
-    print("[Play] 先玩儿", "["+str(elpase)+"S] 再说...")
-    print("[Play] Playing...")
+    print_align("[Play]", "先玩儿" + "["+str(elpase)+"S] 再说...")
+    print_align("[Play]",  "Playing...")
     sleep(elpase)
-    print("[Play]", "["+str(elpase)+"S]" + "时间到，该写作业了，拜拜下次再约...")
+    print_align("[Play]", "["+str(elpase)+"S]" + "时间到，该写作业了，拜拜下次再约...")
     
 def close(client):
-    print("[Close] 断开链接, 下线了...")
+    print_align("[Close]", "断开链接, 下线了...")
     client.close()
 
 # Player 生命周期
@@ -110,13 +110,33 @@ def play(playid, password):
 
     close(client)
 
+def Align(string, length=0):
+    if length == 0:
+        return string
+    
+    slen = len(string)
+    re = string
+    if isinstance(string, str):
+        placeholder = ' '
+    else:
+        placeholder = u' '
+    
+    while slen < length:
+        re += placeholder
+        slen += 1
+    
+    return re
+
+def print_align(name, string):
+    print (Align(name, 10) + Align(string, 10))
+
 # 模拟玩家个数
 N = 1
 BASEE = 100
 def run():
     for idx in range(1, N+1):
         playerid = idx + BASEE
-        print("[main] 玩家", playerid, "准备进入游戏......")
+        print_align("[main]", "玩家 "+str(playerid) + " 准备进入游戏......")
         threading.Thread(target=play, args=(str(playerid), password)).start()
 
 run()
