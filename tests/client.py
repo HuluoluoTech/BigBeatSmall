@@ -40,7 +40,8 @@ def reqlogin(playerid, password):
     client.send(reqdata.encode('utf-8'))
     respdata = client.recv(1024)
 
-    res = json.loads(json.loads(respdata))
+    res = json.loads(respdata)
+    # res = json.loads(json.loads(respdata))
     print("res: ", type(res), res, res["code"])
     if res["code"] != 0:
         print("登录失败， 原因: ", res["reason"])

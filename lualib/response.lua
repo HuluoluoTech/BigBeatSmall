@@ -22,11 +22,21 @@ function response(code, status, ...)
         res = {
             ["code"]   = code,
             ["status"] = status,
-            ["reason"] = arg[3]
+            ["reason"] = arg[1]
         }
     end
 
 	local data = json.encode(res)
-
     return data
+end
+
+function response_with_data(code, status, data)
+    local res_data = {
+        ["code"]   = code,
+        ["status"] = status,
+        ["data"] = data
+    }
+
+    local res = json.encode(res_data)
+    return res
 end

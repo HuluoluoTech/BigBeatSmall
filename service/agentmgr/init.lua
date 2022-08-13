@@ -85,6 +85,12 @@ s.resp.reqlogin = function(source, playerid, node, gate)
 	print("#创建新的 player, and status: ", player.status)
 
 	local agent = s.call(node, "nodemgr", "newservice", "agent", "agent", playerid)
+	if not agent then
+		skynet.error("新建Agent失败")
+		return false, nil
+	end
+
+	print("agent ... ", agent)
 	print("#新的agent创建成功。。。")
 	player.agent 	= agent
 	player.status 	= STATUS.GAME
@@ -94,7 +100,7 @@ end
 
 s.resp.reqkick = function(source, playerid, reason)
 	print("#agentmgr reqkick reason: ", reason)
-	
+
 	local mplayer = players[playerid]
 	if not mplayer then
 		return false

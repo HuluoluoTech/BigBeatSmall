@@ -39,15 +39,16 @@ local dispatch = function(session, address, cmd, ...)
 	local fun = M.resp[cmd]
 	if not fun then
 		--将 message size 对应的消息附上当前消息的 session ，以及 skynet.PTYPE_RESPONSE 这个类别，发送给当前消息的来源 source .
+		print("没有该方法")
 		skynet.ret()
 		return
 	end
 
-	--xpcall安全的调用fun方法
+	--xpcall安全的调用方法
 	local ret = table.pack(xpcall(fun, traceback, address, ...))
 	local isok = ret[1]
-
 	if not isok then
+		print("方法调用失败")
 		skynet.ret()
 		return
 	end

@@ -6,7 +6,6 @@ local skynet = require "skynet"
 local socket = require "skynet.socket"
 local config_run = require "config_run"
 local s = require "service" --import 的是 'service.lua', 在 lualib 中
-local json = require "json"
 
 require "utils" --import utils.lua, 包含了 pack / unpack 工具方法
 
@@ -167,9 +166,8 @@ local process_msg = function(fd, msgstr)
         print("#msg: ", dump(msg))
         print("#登录参数End")
 		skynet.send(login, "lua", "client", fd, cmd, msg)
-    --完成登录流程
     else
-        local gplayer = players[playerid]
+        local gplayer = players[playerid] 
         local agent = gplayer.agent
 
         --client是自定义的消息名

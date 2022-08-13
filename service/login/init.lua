@@ -33,6 +33,7 @@ s.client.login = function(fd, msg, source)
 	local node = skynet.getenv("node")
 	local isok, agent = skynet.call("agentmgr", "lua", "reqlogin", playerid, node, gate)
 	if not isok then
+		print("主播")
 		local res = response(1, "failed", "请求mgr失败")
 		return res
 	end
@@ -45,8 +46,7 @@ s.client.login = function(fd, msg, source)
 	end
 
 	local login_success_res = response(0, "success")
-	local res = json.encode(login_success_res)
-    return res
+    return login_success_res
 end
 
 --Gateway 会调用到该方法

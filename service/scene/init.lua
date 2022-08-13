@@ -10,7 +10,7 @@ require "protocol"
 local balls = {}
 
 --食物的映射
---[id] = food
+--[foodid] = food
 local foods = {}
 
 local food_maxid = 0
@@ -18,17 +18,11 @@ local food_count = 0
 
 local max_food_nums = 50
 
---广播
--- local function broadcast(msg)
---     for i, v in pairs(balls) do
---         s.send(v.node, v.agent, "send", msg)
---     end
--- end
-
---进入
+--[[
+    处理 enter
+]]
 s.resp.enter = function(source, playerid, node, agent)
-    print("#Secne....")
-
+    print("#scene enter")
     if balls[playerid] then
         skynet.error("已经有了映射关系,不用再次创建Ball对象")
         return false
@@ -56,7 +50,9 @@ s.resp.enter = function(source, playerid, node, agent)
     return true
 end
 
---退出scene
+--[[
+    * 广播退出scene
+]]
 s.resp.leave = function(source, playerid)
     if not balls[playerid] then
         skynet.error("playerid => "..playerid.."已离开")
@@ -68,12 +64,15 @@ s.resp.leave = function(source, playerid)
     broadcast(balls, msg)
 end
 
---改变速度
+--[[
+    * 处理客户端发送过来的 shift 移动协议
+]]
 s.resp.shift = function(source, playerid, x, y)
     local b = balls[playerid]
 	if not b then
         return false
     end
+
     b.speedx = x
     b.speedy = y
 end
