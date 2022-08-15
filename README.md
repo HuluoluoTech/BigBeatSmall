@@ -3,11 +3,11 @@
 
 status : pre-release
 
-## Usage
-### Server
+## How to run
+### Server-Side
 [Tutorial](./docs/tutorial.md)
 
-### Client(Python3)
+### Client(Python3)-Side
 ```python
 python3 client.py
 ```
