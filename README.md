@@ -4,17 +4,19 @@
 status : pre-release
 
 ## Usage
+### Server
 [Tutorial](./docs/tutorial.md)
 
-### Client Output
+### Client(Python3)
 ```python
 python3 client.py
 ```
+### Client Output
 ![image](./docs/screenshot/play_loop.png)
 
-### Link
+## Links
 * [million_game_server](https://github.com/luopeiyu/million_game_server)
 * [skynet api](https://github.com/cloudwu/skynet/wiki/LuaAPI)
 
-### 说明
-基于[million_game_server](https://github.com/luopeiyu/million_game_server)的完善和改写。
+## Others
+Based on [million_game_server](https://github.com/luopeiyu/million_game_server).
