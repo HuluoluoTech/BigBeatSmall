@@ -19,7 +19,8 @@ s.client.login = function(fd, msg, source)
 	end
 
 	local playerid 	= tonumber(msg[2])
-	local password  = tonumber(msg[3])
+	-- local password  = tonumber(msg[3])
+	local password  = msg[3]
 	local gate 		= source
 
     --校验用户名密码
