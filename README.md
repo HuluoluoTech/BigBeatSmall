@@ -1,18 +1,23 @@
 # GMMO 
 [GMMO](https://github.com/HuluoluoTech/gmmo) is shortened form of General Massively Multiplayer Online. 
 
-status : pre-release
+STATUS : Pre-release
 
-## How to run
-### Server-Side
+## Tutorial
 [Tutorial](./docs/tutorial.md)
 
-### Client(Python3)-Side
-```python
-python3 client.py
+### Client Operations
+```shell
+[main]    玩家 101 准备进入游戏......
+[Login]   娱乐一下，登录游戏看看...
+[Login]   恭喜，网络还行，登录成功了， 马上进入游戏开始Play吧...
+[Enter]   玩家 101 快速点击了 [进入游戏] 按钮， 迫不及待了...
+[Enter]   进入游戏成功, 开始大玩儿一场吧, Go Rocket it...
+[Play]    先玩儿[5S] 再说...
+[Play]    Playing...
+[Play]    [5S]时间到，该写作业了，拜拜下次再约...
+[Close]   断开链接, 下线了...
 ```
-### Client Output
-![image](./docs/screenshot/play_loop.png)
 
 ## Links
 * [million_game_server](https://github.com/luopeiyu/million_game_server)

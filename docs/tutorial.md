@@ -1,6 +1,5 @@
 # Tutorial
 
-## How To Use
 ### Server Side
 * First of first, run scripts down below and let server runing...
 ```shell
