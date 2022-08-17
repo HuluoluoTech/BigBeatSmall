@@ -1,5 +1,5 @@
 local skynet        = require "skynet"
-local socketdriver  = require "skynet.socket"
+local socketdriver  = require "skynet.socketdriver"
 local netpack       = require "skynet.netpack"
 
 local queue
@@ -27,8 +27,11 @@ end
 
 --处理消息
 function process_msg(fd, msg, sz)
+    skynet.error("recv from fd:"..fd)
+
     local str = netpack.tostring(msg,sz)
-    skynet.error("recv from fd:"..fd .." str:"..str)
+    skynet.error("recv from fd:"..fd .." str:"..msg)
+
 end
 
 --收到多于1条消息时
@@ -43,6 +46,7 @@ end
 -- message queue
 --解码底层传来的SOCKET类型消息
 function socket_unpack( msg, sz )
+    skynet.error("[netpack] unpack... msg: ", msg, sz)
     return netpack.filter( queue, msg, sz)
 end
 

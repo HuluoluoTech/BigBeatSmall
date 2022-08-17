@@ -4,11 +4,19 @@ import socket
 import json
 import threading
 from time import sleep
+from bitstring import pack
 
 HOST = '127.0.0.1'
 PORT = 8001
 
 password = "123"
+
+def pack_login():
+    # bin = pack('>Hc13', 13, 'login,101,134')
+    # bin = pack('>H', 13, 'login,101,134')
+    login = 'login,101,134'
+    bin = pack('<16h', *range(16))
+    return bin
 
 ###############################################################################
 #
@@ -49,9 +57,9 @@ def new_client():
 def req_login(client, playerid, password):
     print_align("[Login]", "娱乐一下，登录游戏看看...")
     protocol = protocol_login(playerid, password)
-    ss = ">Hc13" + str(13) + "login,101,134"
-    client.send(ss.encode('utf-8'))
-    # client.send(protocol.encode('utf-8'))
+    # ss = ">Hc13" + str(13) + "login,101,134"
+    # client.send(ss.encode('utf-8'))
+    client.send(bytes(pack_login()))
     respdata = client.recv(1024)
 
     res = json.loads(respdata)

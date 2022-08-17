@@ -3,23 +3,12 @@
 ]]
 
 local skynet        = require "skynet"
--- local socket        = require "skynet.socket"
 local config_run    = require "config_run"
-local socketdriver  = require "skynet.socket"
+local socketdriver  = require "skynet.socketdriver"
 local s             = require "service" --import 的是 'service.lua', 在 lualib 中
 
 require "packdata" --gateway/netpack
 require "utils" --import utils.lua, 包含了 pack / unpack 工具方法
-
--- --注册SOCKET类型消息
-skynet.register_protocol{
-    name = "socket_msg",
-    id = 31, --skynet.PTYPE_SOCKET,
-    pack = function(m) return tostring(m) end,
-    -- unpack = socket_unpack,
-    unpack = skynet.tostring,
-    dispatch = socket_dispatch
-}
 
 -- 用于保存客户端连接信息
 local conns = {} --[socket_id] = conn
@@ -256,7 +245,13 @@ end
 function init()
     skynet.error("[gateway] Init...")
 
-
+    -- --注册SOCKET类型消息
+    skynet.register_protocol({
+        name = "socket",
+        id = skynet.PTYPE_SOCKET,
+        unpack = socket_unpack,
+        dispatch = socket_dispatch,
+    })
 
     local node = skynet.getenv("node")
     local nodecfg = config_run[node]
@@ -266,7 +261,9 @@ function init()
     skynet.error("Gateway Listen socket :", "0.0.0.0", port)
 
     --开启监听
+    -- socketdriver.start(listenfd, socket_dispatch)
     socketdriver.start(listenfd)
+
 end
 
 s.start(...)
