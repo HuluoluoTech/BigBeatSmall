@@ -49,7 +49,9 @@ def new_client():
 def req_login(client, playerid, password):
     print_align("[Login]", "娱乐一下，登录游戏看看...")
     protocol = protocol_login(playerid, password)
-    client.send(protocol.encode('utf-8'))
+    ss = ">Hc13" + str(13) + "login,101,134"
+    client.send(ss.encode('utf-8'))
+    # client.send(protocol.encode('utf-8'))
     respdata = client.recv(1024)
 
     res = json.loads(respdata)

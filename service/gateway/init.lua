@@ -2,12 +2,24 @@
 * gateway 服务的实现
 ]]
 
-local skynet = require "skynet"
-local socket = require "skynet.socket"
-local config_run = require "config_run"
-local s = require "service" --import 的是 'service.lua', 在 lualib 中
+local skynet        = require "skynet"
+-- local socket        = require "skynet.socket"
+local config_run    = require "config_run"
+local socketdriver  = require "skynet.socket"
+local s             = require "service" --import 的是 'service.lua', 在 lualib 中
 
+require "packdata" --gateway/netpack
 require "utils" --import utils.lua, 包含了 pack / unpack 工具方法
+
+-- --注册SOCKET类型消息
+skynet.register_protocol{
+    name = "socket_msg",
+    id = 31, --skynet.PTYPE_SOCKET,
+    pack = function(m) return tostring(m) end,
+    -- unpack = socket_unpack,
+    unpack = skynet.tostring,
+    dispatch = socket_dispatch
+}
 
 -- 用于保存客户端连接信息
 local conns = {} --[socket_id] = conn
@@ -225,18 +237,36 @@ local connect = function(fd, addr)
 end
 
 --服务启动后，service模块会调用s.init方法
-function s.init()
-    print("#gateway init")
+function s.init_with()
+    -- print("#gateway init")
+    -- local node = skynet.getenv("node")
+    -- local nodecfg = config_run[node]
+    -- local port = nodecfg.gateway[s.id].port
+
+    -- local listenfd = socket.listen("0.0.0.0", port)
+    -- skynet.error("Gateway Listen socket :", "0.0.0.0", port)
+
+    -- --skynet.fork发起协程，协程recv_loop是个循环
+    -- socket.start(listenfd , connect)
+end
+
+-- 开启8888端口的监听，当有网络事件（新连接、连接关
+-- 闭、收到数据）发生时，先用socket_unpack方法解析它，再用
+-- dispatch方法处理它。
+function init()
+    skynet.error("[gateway] Init...")
+
+
 
     local node = skynet.getenv("node")
     local nodecfg = config_run[node]
     local port = nodecfg.gateway[s.id].port
 
-    local listenfd = socket.listen("0.0.0.0", port)
+    local listenfd = socketdriver.listen("0.0.0.0", port)
     skynet.error("Gateway Listen socket :", "0.0.0.0", port)
 
-    --skynet.fork发起协程，协程recv_loop是个循环
-    socket.start(listenfd , connect)
+    --开启监听
+    socketdriver.start(listenfd)
 end
 
 s.start(...)
