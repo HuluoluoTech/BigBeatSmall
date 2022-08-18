@@ -54,8 +54,8 @@ def pack_enter():
     bin = pack('uint:16, bits:40', 5, bytes(protocol_enter_bin.encode('utf-8')))
     return bin
 
-def pack_login(playerid, password):
-    protocol_shift_bin = protocol_shift(playerid, password)
+def pack_shift(x, y):
+    protocol_shift_bin = protocol_shift(x, y)
     bin = pack('uint:16, bits:104', 13, bytes(protocol_shift_bin.encode('utf-8')))
     return bin
     
