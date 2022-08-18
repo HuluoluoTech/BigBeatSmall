@@ -38,9 +38,11 @@ local function run()
 	cluster.open(current_node)
 
 	--开启gate服务
+	skynet.error("[main] start gateway services")
 	for i, v in pairs(node_cfg.gateway or {}) do
 		local srv = skynet.newservice("gateway","gateway", i)
 		skynet.name("gateway"..i, srv)
+		skynet.error("[main] gateway service: ", srv)
 	end
 
 	--开始login服务
@@ -68,6 +70,7 @@ local function run()
 	end
 
 	--退出服务
+	skynet.error("[main] Exit.")
 	skynet.exit()
 end
 

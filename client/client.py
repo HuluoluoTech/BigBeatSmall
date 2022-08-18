@@ -1,21 +1,21 @@
 from base64 import encode
 import socket
+import bitstring
 
 import json
 import threading
 from time import sleep
 from bitstring import pack
+from bitstring import BitStream
 
 HOST = '127.0.0.1'
-PORT = 8001
+PORT = 8002
 
 password = "123"
 
 def pack_login():
-    # bin = pack('>Hc13', 13, 'login,101,134')
-    # bin = pack('>H', 13, 'login,101,134')
-    login = 'login,101,134'
-    bin = pack('<16h', *range(16))
+    login = 'login,101,123'
+    bin = pack('uint:16, bits:104', 13, bytes(login.encode('utf-8')))
     return bin
 
 ###############################################################################
@@ -57,9 +57,8 @@ def new_client():
 def req_login(client, playerid, password):
     print_align("[Login]", "娱乐一下，登录游戏看看...")
     protocol = protocol_login(playerid, password)
-    # ss = ">Hc13" + str(13) + "login,101,134"
-    # client.send(ss.encode('utf-8'))
-    client.send(bytes(pack_login()))
+    # client.send(protocol.encode('utf-8'))
+    client.send(pack_login().tobytes())
     respdata = client.recv(1024)
 
     res = json.loads(respdata)

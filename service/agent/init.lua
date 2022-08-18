@@ -3,7 +3,8 @@
 ]]
 
 local skynet = require "skynet"
-local s = require "service"
+local s 	 = require "service"
+
 require "db"
 require "sceneapi"
 
@@ -61,7 +62,7 @@ end
 	退出服务
 ]]
 s.resp.exit = function(source)
-	print("#agent exit.")
+	print("[agent] exit.")
 
 	skynet.exit()
 end
@@ -72,6 +73,7 @@ end
 
 s.init = function( )
 	--playerid = s.id
+	skynet.error("[agent] init")
 
 	load_player_data()
 

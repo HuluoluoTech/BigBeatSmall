@@ -1,20 +1,25 @@
 --[[
-* gateway 服务的实现
+    * gateway 服务的实现
 ]]
 
 local skynet        = require "skynet"
 local config_run    = require "config_run"
 local socketdriver  = require "skynet.socketdriver"
+local netpack       = require "skynet.netpack"
 local s             = require "service" --import 的是 'service.lua', 在 lualib 中
 
-require "packdata" --gateway/netpack
-require "utils" --import utils.lua, 包含了 pack / unpack 工具方法
+--import utils.lua, 包含了 pack / unpack 工具方法
+require "utils"
+
+local queue
 
 -- 用于保存客户端连接信息
-local conns = {} --[socket_id] = conn
+-- [socket_id] = conn
+local conns = {}
 
 --用于记录[已登录]的玩家信息
-local players = {} --[playerid] = new_gateplayer
+--[playerid] = new_gateplayer
+local players = {}
 
 --连接类
 local function new_conn()
@@ -46,13 +51,18 @@ end
     4/ kick
 ]]
 
+s.resp.test = function (source, msg)
+    print("..........msg: ", msg)
+end
+
 --用于login服务的消息转发，功能是将消息发送到指定fd的客户端
 s.resp.send_by_fd = function(source, fd, msg)
+    skynet.error("[gateway] send_by_fd: ", fd)
     if not conns[fd] then
         return
     end
 
-    socket.write(fd, msg)
+    socketdriver.write(fd, msg)
 
     print("response 数据写完毕, Data: ", msg)
 end
@@ -73,6 +83,8 @@ end
 
 --登录成功后确认接口
 s.resp.sure_agent = function(source, fd, playerid, agent)
+    skynet.error("[gateway] sure_agent")
+    
 	local conn = conns[fd]
 	if not conn then --登陆过程中已经下线
 		skynet.call("agentmgr", "lua", "reqkick", playerid, "未完成登陆即下线")
@@ -134,18 +146,18 @@ s.resp.kick = function(source, playerid)
     conns[c.fd] = nil
 
     disconnect(c.fd)
-    socket.close(c.fd)
+    socketdriver.close(c.fd)
 end
 
-local process_msg = function(fd, msgstr)
+process_msg = function(fd, msgstr)
     print("#gateway fd: ", fd)
     print("#gateway proccess_msg msgstr: "..msgstr)
 
     local cmd, msg = str_unpack(msgstr)
-    skynet.error("#after unpack, recv "..fd.." ["..cmd.."] {"..table.concat( msg, ",").."}")
+    -- skynet.error("#after unpack, recv "..fd.." ["..cmd.."] {"..table.concat( msg, ",").."}")
 
-    print("#msg: ", dump(msg))
-    print("#conns:", dump(conns))
+    -- print("#msg: ", dump(msg))
+    -- print("#conns:", dump(conns))
 
     local conn = conns[fd]
     local playerid = conn.playerid
@@ -153,19 +165,20 @@ local process_msg = function(fd, msgstr)
 
     --尚未完成登录流程
     if not playerid then
-        print("未登录状态， 准备登录...")
+        print("[gateway] Ready to Login...")
         local node = skynet.getenv("node")
         local nodecfg = config_run[node]
         local loginid = math.random(1, #nodecfg.login)
-        --#TODO 为什么把 loginid 频道这里？？？
+
         --main创建服务的时候的login服务名称
         local login = "login"..loginid
 
-        print("#登录参数:")
-        print("#login: ", login)
-        print("#cmd: ", cmd)
-        print("#msg: ", dump(msg))
-        print("#登录参数End")
+        print("\n[gateway] Login params:")
+        print("#Login Server: ", login)
+        print("#Login CMD   : ", cmd)
+        print("#Login Params: ", dump(msg))
+        print("\n")
+
 		skynet.send(login, "lua", "client", fd, cmd, msg)
     else
         local gplayer = players[playerid] 
@@ -174,69 +187,81 @@ local process_msg = function(fd, msgstr)
         --client是自定义的消息名
 		skynet.send(agent, "lua", "client", cmd, msg)
     end
-
-    print("#proccess msg end")
 end
 
-local process_buff = function(fd, readbuff)
-    while true do
-        -- local msgstr, rest = string.match( readbuff, "(.-)\r\n(.*)")
-        local msgstr, rest = string.match( readbuff, "(.-)#(.*)")
-        print("#proccess buff, msgstr / rest: ", msgstr, rest)
-        if msgstr then
-            readbuff = rest
-            process_msg(fd, msgstr)
-        else
-            return readbuff
-        end
-    end
-end
+------------------------------------------------------------------------------------------------------------------------------------------------
 
---每一条连接接收数据处理
---协议格式 cmd,arg1,arg2,...#
-local recv_loop = function(fd)
-    socket.start(fd)
-    skynet.error("socket connected " ..fd)
+-- 链接处理
+function process_connect(fd, addr)
+    skynet.error("[gateway] new conn fd:"..fd.." addr:"..addr)
+    -- print("connect from " .. addr .. " " .. fd)
 
-    local readbuff = ""
-    while true do
-        local recvstr = socket.read(fd)
-        if recvstr then
-        print("#recvstr: "..recvstr)
-        readbuff = readbuff..recvstr
-            readbuff = process_buff(fd, readbuff)
-            print("#recv_loop readbuff: "..readbuff.."END")
-        else
-            skynet.error("socket close " ..fd)
-			disconnect(fd)
-            socket.close(fd)
-            return
-        end
-    end
-end
-
---有新连接时
-local connect = function(fd, addr)
-    print("connect from " .. addr .. " " .. fd)
 	local c = new_conn()
     conns[fd] = c
     c.fd = fd
 
-    skynet.fork(recv_loop, fd)
+    socketdriver.start(fd)
 end
 
---服务启动后，service模块会调用s.init方法
-function s.init_with()
-    -- print("#gateway init")
-    -- local node = skynet.getenv("node")
-    -- local nodecfg = config_run[node]
-    -- local port = nodecfg.gateway[s.id].port
+--关闭连接
+function process_close(fd)
+    skynet.error("close fd:"..fd)
+end
 
-    -- local listenfd = socket.listen("0.0.0.0", port)
-    -- skynet.error("Gateway Listen socket :", "0.0.0.0", port)
+--发生错误
+function process_error(fd, error)
+    skynet.error("error fd:"..fd.." error:"..error)
+end
 
-    -- --skynet.fork发起协程，协程recv_loop是个循环
-    -- socket.start(listenfd , connect)
+--发生警告
+function process_warning(fd, size)
+    skynet.error("warning fd:"..fd.." size:"..size)
+end
+
+--处理消息
+function process_data(fd, msg, sz)
+    local str = netpack.tostring(msg,sz)
+    -- skynet.error("recv from fd:"..fd .." str:"..str)
+    process_msg(fd, str)
+
+end
+
+--收到多于1条消息时
+function process_more()
+    for fd, msg, sz in netpack.pop, queue do
+        skynet.fork(process_data, fd, msg, sz)
+    end
+end
+----------------------------------------------------------------------------------------------------------------------------------
+-- message queue
+
+--解码底层传来的SOCKET类型消息
+function socket_unpack( msg, sz )
+    -- skynet.error("[netpack] unpack... msg: ", dump(msg))
+    return netpack.filter( queue, msg, sz)
+end
+
+--处理底层传来的SOCKET类型消息
+function socket_dispatch(_, _, q, type, ...)
+    skynet.error("[gateway] socket_dispatch type:"..(type or "nil"))
+    if type == nil then
+        return
+    end
+
+    queue = q
+    if type == "open" then
+        process_connect(...)
+    elseif type == "data" then
+        process_data(...)
+    elseif type == "more" then
+        process_more(...)
+    elseif type == "close" then
+        process_close(...)
+    elseif type == "error" then
+        process_error(...)
+    elseif type == "warning" then
+        process_warning(...)
+    end
 end
 
 -- 开启8888端口的监听，当有网络事件（新连接、连接关
@@ -245,7 +270,7 @@ end
 function init()
     skynet.error("[gateway] Init...")
 
-    -- --注册SOCKET类型消息
+    --注册SOCKET类型消息
     skynet.register_protocol({
         name = "socket",
         id = skynet.PTYPE_SOCKET,
@@ -253,17 +278,14 @@ function init()
         dispatch = socket_dispatch,
     })
 
-    local node = skynet.getenv("node")
-    local nodecfg = config_run[node]
-    local port = nodecfg.gateway[s.id].port
+    local node      = skynet.getenv("node")
+    local nodecfg   = config_run[node]
+    local port      = nodecfg.gateway[s.id].port
+    local listenfd  = socketdriver.listen("0.0.0.0", port)
 
-    local listenfd = socketdriver.listen("0.0.0.0", port)
-    skynet.error("Gateway Listen socket :", "0.0.0.0", port)
+    skynet.error("[Gateway] Listening socket :", "0.0.0.0", port)
 
-    --开启监听
-    -- socketdriver.start(listenfd, socket_dispatch)
     socketdriver.start(listenfd)
-
 end
 
 s.start(...)

@@ -41,7 +41,7 @@ end
 	2/ reqkick
 ]]
 s.resp.reqlogin = function(source, playerid, node, gate)
-	print("#agentmgr reqlogin playerid: ", playerid)
+	print("[agentmgr] reqlogin playerid: ", playerid)
 
 	local mplayer = players[playerid]
 	--登陆过程禁止顶替
@@ -71,6 +71,8 @@ s.resp.reqlogin = function(source, playerid, node, gate)
 		s.call(pnode, pgate, "kick", playerid)
 	end
 
+	skynet.error("[agentmgr] New Player: ", playerid)
+
 	--上线
 	local player    = new_mgrplayer()
 
@@ -82,24 +84,23 @@ s.resp.reqlogin = function(source, playerid, node, gate)
 
 	players[playerid] = player
 
-	print("#创建新的 player, and status: ", player.status)
-
+	skynet.error("[agentmgr] Try to New Agent")
 	local agent = s.call(node, "nodemgr", "newservice", "agent", "agent", playerid)
 	if not agent then
-		skynet.error("新建Agent失败")
+		skynet.error("[agentmgr] create new agent error")
 		return false, nil
 	end
 
-	print("agent ... ", agent)
-	print("#新的agent创建成功。。。")
 	player.agent 	= agent
 	player.status 	= STATUS.GAME
+
+	skynet.error("[agentmgr] New agent created: ", agent)
 
 	return true, agent
 end
 
 s.resp.reqkick = function(source, playerid, reason)
-	print("#agentmgr reqkick reason: ", reason)
+	print("[agentmgr] reqkick reason: ", reason)
 
 	local mplayer = players[playerid]
 	if not mplayer then
@@ -117,13 +118,11 @@ s.resp.reqkick = function(source, playerid, reason)
 
 	s.call(pnode, pagent, "kick")
 	s.send(pnode, pagent, "exit")
-	s.send(pnode, pgate, "kick", playerid)
+	s.send(pnode, pgate,  "kick", playerid)
 
 	players[playerid] = nil
 
 	return true
 end
-
---情况 永不下线
 
 s.start(...)

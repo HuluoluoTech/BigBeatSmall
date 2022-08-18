@@ -29,26 +29,33 @@ end
 --]]
 
 function traceback(err)
+	skynet.error("[service] traceback error : ", tostring(err))
 	skynet.error(tostring(err))
 	skynet.error(debug.traceback())
 end
 
 local dispatch = function(session, address, cmd, ...)
-	print("#service dispatch address=>cmd: ", address, "=>"..cmd)
+	skynet.error("[service] from: ", session, ", address=>cmd: ", address, "=>"..cmd)
 
 	local fun = M.resp[cmd]
 	if not fun then
 		--将 message size 对应的消息附上当前消息的 session ，以及 skynet.PTYPE_RESPONSE 这个类别，发送给当前消息的来源 source .
-		print("没有该方法")
+		skynet.error("function "..cmd.."Not Found.")
 		skynet.ret()
 		return
 	end
 
 	--xpcall安全的调用方法
 	local ret = table.pack(xpcall(fun, traceback, address, ...))
+	skynet.error("xpcall call: "..cmd.." result: "..": ", ret[1])
+	for i, v in pairs(ret) do
+		print("#ret: ", i, v)
+	end
+	print("\n")
+
 	local isok = ret[1]
 	if not isok then
-		print("方法调用失败")
+		skynet.error("xpcall failed to call: "..cmd)
 		skynet.ret()
 		return
 	end
@@ -57,7 +64,7 @@ local dispatch = function(session, address, cmd, ...)
 end
 
 function init()
-	print("#service init()")
+	print("[service] M.init")
 
 	--注册消息的处理函数
 	skynet.dispatch("lua", dispatch)
@@ -68,20 +75,19 @@ end
 
 --两个工具方法，对 本地 、cluster的封装
 function M.call(node, srv, ...)
-	print("#service CALLL service: ", srv)
+	print("[service] M.call: ", node, srv)
 
 	local mynode = skynet.getenv("node")
-	print("#mynode: ", mynode)
 	if node == mynode then
-		print("#调用 srv")
 		return skynet.call(srv, "lua", ...)
-		-- return skynet.send(srv, "lua", ...)
 	else
 		return cluster.call(node, srv, ...)
 	end
 end
 
 function M.send(node, srv, ...)
+	skynet.error("[service] M.send: ", node, srv)
+
 	local mynode = skynet.getenv("node")
 	if node == mynode then
 		return skynet.send(srv, "lua", ...)
@@ -91,10 +97,11 @@ function M.send(node, srv, ...)
 end
 
 function M.start(name, id, ...)
-	print("#service name: "..name..", id: "..tostring(id))
+	print("[service] name: "..name..", id: "..tostring(id))
 
 	M.name = name
 	M.id = tonumber(id)
+
 	skynet.start(init)
 end
 

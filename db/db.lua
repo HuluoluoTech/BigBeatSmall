@@ -24,8 +24,7 @@ function is_playerid_available(playerid)
 end
 
 function is_password_valid(password)
-    --#TODO
-    print("Query DB...")
+    skynet.error("Query DB to valid password...")
 
     local sql = "select * from Users where Password = "..password
     local user = mysql_connector:query(sql)
@@ -46,7 +45,7 @@ end
 function load_player_data(...)
     --#TODO
     skynet.error("Loading Player Data...")
-	skynet.sleep(200)
+	skynet.sleep(1)
 end
 
 skynet.start(function ()
