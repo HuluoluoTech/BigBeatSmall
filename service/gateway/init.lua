@@ -53,14 +53,15 @@ end
 
 --用于login服务的消息转发，功能是将消息发送到指定fd的客户端
 s.resp.send_by_fd = function(source, fd, msg)
-    skynet.error("[gateway] send_by_fd: ", fd)
+    skynet.error("[gateway] send_by_fd: ", fd, msg)
+
     if not conns[fd] then
         return
     end
 
-    socketdriver.write(fd, msg)
+    socketdriver.send(fd, msg)
 
-    print("response 数据写完毕, Data: ", msg)
+    skynet.error("[gateway] Write response Data to Player.")
 end
 
 --用于agent的消息转发，功能是将消息发送给指定玩家id的客户端
@@ -97,12 +98,12 @@ s.resp.sure_agent = function(source, fd, playerid, agent)
     --登录成功后，记录玩家信息
     players[playerid] = gplayer
 
-    print("## 登录成功新建player: ", players[playerid].playerid)
-    print("目前在线的玩家个数: ", count_table(players))
+    print("[gateway] Create New GatePlayer: ", players[playerid].playerid)
+    print("[gateway] Online Players: ", count_table(players))
     for key, _ in pairs(players) do
-        -- TODO  
-        print("玩家ID: ", key)
+        skynet.error("[gateway] PlayerID: ", key)
     end
+    skynet.error("\n")
 
 	return true
 end
@@ -121,7 +122,7 @@ local disconnect = function(fd)
     --已在游戏中
     else
         players[playerid] = nil
-        local reason = "断线"
+        local reason = "disconnect"
         skynet.call("agentmgr", "lua", "reqkick", playerid, reason)
     end
 end
@@ -182,7 +183,6 @@ end
 -- 链接处理
 function process_connect(fd, addr)
     skynet.error("[gateway] new conn fd:"..fd.." addr:"..addr)
-    -- print("connect from " .. addr .. " " .. fd)
 
 	local c = new_conn()
     conns[fd] = c

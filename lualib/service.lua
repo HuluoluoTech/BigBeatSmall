@@ -56,9 +56,6 @@ end
 function init()
 	print("[service] M.init")
 
-	--注册消息的处理函数
-	skynet.dispatch("lua", dispatch)
-
 	if M.init then
 		M.init()
 	end
@@ -89,6 +86,9 @@ end
 
 function M.start(name, id, ...)
 	print("[service] name: "..name..", id: "..tostring(id))
+
+	--Register dispatch function
+	skynet.dispatch("lua", dispatch)
 
 	M.name = name
 	M.id = tonumber(id)

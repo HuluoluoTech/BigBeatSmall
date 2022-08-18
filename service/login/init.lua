@@ -39,15 +39,10 @@ s.client.login = function(fd, msg, source)
 		return res
 	end
 
-	print("resp: ", dump(s))
-
 	--notify gateway service
-	print(">>>Reay to call sure_agent gate: ", gate)
-	-- isok = skynet.call(gate, "lua", "sure_agent", fd, playerid, agent)
 	-- local nname = skynet.localname(".xxx")
 	-- print("nname: ", nname)
 	isok = skynet.call(gate, "lua", "sure_agent", fd, playerid, agent)
-	print("<<<Call sure_agent result: ", isok)
 	if not isok then
 		local res = response(1, "failed", "call sure_agent failed")
 		return res
