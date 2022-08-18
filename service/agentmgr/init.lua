@@ -46,7 +46,6 @@ s.resp.reqlogin = function(source, playerid, node, gate)
 	local mplayer = players[playerid]
 	--登陆过程禁止顶替
 	if mplayer and mplayer.status == STATUS.LOGOUT then
-		print("不能顶替掉。。。")
 		skynet.error("reqlogin fail, at status LOGOUT " ..playerid)
 		return false
 	end

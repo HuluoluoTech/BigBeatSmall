@@ -9,7 +9,7 @@ from bitstring import pack
 from bitstring import BitStream
 
 HOST = '127.0.0.1'
-PORT = 8002
+PORT = 8001
 
 password = "123"
 

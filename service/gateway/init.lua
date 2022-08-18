@@ -24,7 +24,7 @@ local players = {}
 --连接类
 local function new_conn()
     local m = {
-        fd = nil, --socket fd
+        fd       = nil, --socket fd
         playerid = nil, --playerid
     }
 
@@ -35,8 +35,8 @@ end
 local function new_gateplayer()
     local m = {
         playerid = nil,
-        agent = nil,
-		conn = nil,
+        agent    = nil,
+		conn     = nil,
     }
 
     return m
@@ -50,10 +50,6 @@ end
     3/ sure_agent
     4/ kick
 ]]
-
-s.resp.test = function (source, msg)
-    print("..........msg: ", msg)
-end
 
 --用于login服务的消息转发，功能是将消息发送到指定fd的客户端
 s.resp.send_by_fd = function(source, fd, msg)
@@ -84,7 +80,7 @@ end
 --登录成功后确认接口
 s.resp.sure_agent = function(source, fd, playerid, agent)
     skynet.error("[gateway] sure_agent")
-    
+
 	local conn = conns[fd]
 	if not conn then --登陆过程中已经下线
 		skynet.call("agentmgr", "lua", "reqkick", playerid, "未完成登陆即下线")
@@ -132,6 +128,7 @@ end
 
 --第二种登出：gateway发送 reqkick 请求给 agentmgr
 s.resp.kick = function(source, playerid)
+    skynet.error("[gateway] kick")
     local gplayer = players[playerid]
     if not gplayer then
         return
@@ -149,21 +146,12 @@ s.resp.kick = function(source, playerid)
     socketdriver.close(c.fd)
 end
 
-process_msg = function(fd, msgstr)
-    print("#gateway fd: ", fd)
-    print("#gateway proccess_msg msgstr: "..msgstr)
-
-    local cmd, msg = str_unpack(msgstr)
-    -- skynet.error("#after unpack, recv "..fd.." ["..cmd.."] {"..table.concat( msg, ",").."}")
-
-    -- print("#msg: ", dump(msg))
-    -- print("#conns:", dump(conns))
-
-    local conn = conns[fd]
-    local playerid = conn.playerid
-    print("#playerid: ", playerid)
-
-    --尚未完成登录流程
+function process_msg(fd, msgstr)
+    skynet.error("[gateway] process_msg")
+    local cmd, msg  = str_unpack(msgstr)
+    local conn      = conns[fd]
+    local playerid  = conn.playerid
+    --playerid is nil
     if not playerid then
         print("[gateway] Ready to Login...")
         local node = skynet.getenv("node")
@@ -206,6 +194,7 @@ end
 --关闭连接
 function process_close(fd)
     skynet.error("close fd:"..fd)
+    netpack.clear(queue)
 end
 
 --发生错误
@@ -221,9 +210,7 @@ end
 --处理消息
 function process_data(fd, msg, sz)
     local str = netpack.tostring(msg,sz)
-    -- skynet.error("recv from fd:"..fd .." str:"..str)
     process_msg(fd, str)
-
 end
 
 --收到多于1条消息时
@@ -285,6 +272,7 @@ function init()
 
     skynet.error("[Gateway] Listening socket :", "0.0.0.0", port)
 
+    socketdriver.nodelay(listenfd)
     socketdriver.start(listenfd)
 end
 

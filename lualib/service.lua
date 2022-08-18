@@ -18,16 +18,6 @@ local M = {
 	resp = {}, --resp表会存放着消息处理方法
 }
 
---[[
-function exit_dispatch()
-	if M.exit then
-		M.exit()
-	end
-	skynet.ret()
-	skynet.exit()
-end
---]]
-
 function traceback(err)
 	skynet.error("[service] traceback error : ", tostring(err))
 	skynet.error(tostring(err))
@@ -35,7 +25,7 @@ function traceback(err)
 end
 
 local dispatch = function(session, address, cmd, ...)
-	skynet.error("[service] from: ", session, ", address=>cmd: ", address, "=>"..cmd)
+	skynet.error("[service] dispatch: ", cmd)
 
 	local fun = M.resp[cmd]
 	if not fun then
@@ -48,10 +38,10 @@ local dispatch = function(session, address, cmd, ...)
 	--xpcall安全的调用方法
 	local ret = table.pack(xpcall(fun, traceback, address, ...))
 	skynet.error("xpcall call: "..cmd.." result: "..": ", ret[1])
-	for i, v in pairs(ret) do
-		print("#ret: ", i, v)
-	end
-	print("\n")
+	-- for i, v in pairs(ret) do
+	-- 	print("#ret: ", i, v)
+	-- end
+	-- print("\n")
 
 	local isok = ret[1]
 	if not isok then
@@ -68,6 +58,7 @@ function init()
 
 	--注册消息的处理函数
 	skynet.dispatch("lua", dispatch)
+
 	if M.init then
 		M.init()
 	end
@@ -103,6 +94,15 @@ function M.start(name, id, ...)
 	M.id = tonumber(id)
 
 	skynet.start(init)
+end
+
+M.resp.exit = function ()
+	if M.exit then
+		M.exit()
+	end
+
+	skynet.ret()
+	skynet.exit()
 end
 
 return M

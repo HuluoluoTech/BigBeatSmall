@@ -15,7 +15,7 @@ s.client.login = function(fd, msg, source)
 	skynet.error("[login] login")
 	local message_len = #msg
 	if message_len < 3 then
-		local res = response(1, "failed", "参数个数错误")
+		local res = response(1, "failed", "Wrong Params")
 		return res
 	end
 
@@ -39,11 +39,15 @@ s.client.login = function(fd, msg, source)
 		return res
 	end
 
-	--登录校验成功，通知gateway记录登录状态
+	print("resp: ", dump(s))
+
+	--notify gateway service
 	print(">>>Reay to call sure_agent gate: ", gate)
+	-- isok = skynet.call(gate, "lua", "sure_agent", fd, playerid, agent)
+	-- local nname = skynet.localname(".xxx")
+	-- print("nname: ", nname)
 	isok = skynet.call(gate, "lua", "sure_agent", fd, playerid, agent)
 	print("<<<Call sure_agent result: ", isok)
-
 	if not isok then
 		local res = response(1, "failed", "call sure_agent failed")
 		return res
@@ -60,7 +64,7 @@ s.resp.client = function(source, fd, cmd, msg)
 	skynet.error("[login] Client fd: ", fd, cmd)
     if s.client[cmd] then
         local res = s.client[cmd](fd, msg, source)
-        -- skynet.call(source, "lua", "send_by_fd", fd, res)
+        skynet.call(source, "lua", "send_by_fd", fd, res)
     else
         skynet.error("s.resp.client fail", cmd)
     end

@@ -21,6 +21,8 @@ print_mascot()
 * 执行逻辑
 ]]
 local function run()
+	skynet.newservice("debug_console", 8009)
+
 	--初始化当前Node
 	local current_node = skynet.getenv("node")
 	local node_cfg = config_run[current_node]
@@ -42,6 +44,7 @@ local function run()
 	for i, v in pairs(node_cfg.gateway or {}) do
 		local srv = skynet.newservice("gateway","gateway", i)
 		skynet.name("gateway"..i, srv)
+		skynet.name(".xxx", srv)
 		skynet.error("[main] gateway service: ", srv)
 	end
 
@@ -70,8 +73,8 @@ local function run()
 	end
 
 	--退出服务
-	skynet.error("[main] Exit.")
 	skynet.exit()
+	skynet.error("[main] Exit.")
 end
 
 --服务入口
