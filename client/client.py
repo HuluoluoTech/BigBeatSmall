@@ -1,30 +1,22 @@
-from base64 import encode
 import socket
-import bitstring
-
 import json
 import threading
 from time import sleep
 from bitstring import pack
 from bitstring import BitStream
-
-HOST = '127.0.0.1'
-PORT = 8001
-
-password = "123"
-
-
+from utils import print_align
+from config import HOST, PORT, PASSWORD
 
 ###############################################################################
 #
 # 客户端发起的通信协议格式
-# 1 登录协议： login,playerid,password
+# 1 登录协议： login,playerid,PASSWORD
 # 2 进入游戏： enter
 # 3 移动协议： shift, x, y
 #
 ###############################################################################
-def protocol_login(playerid, password):
-    res = "login," + playerid + "," + password
+def protocol_login(playerid, PASSWORD):
+    res = "login," + playerid + "," + PASSWORD
     return res
 
 def protocol_enter():
@@ -38,14 +30,14 @@ def protocol_shift(x, y):
 ###############################################################################
 #
 # 使用bitstring打包通信协议格式
-# 1 登录协议： pack(login,playerid,password)
+# 1 登录协议： pack(login,playerid,PASSWORD)
 # 2 进入游戏： enter
 # 3 移动协议： shift, x, y
 #
 ###############################################################################
 
-def pack_login(playerid, password):
-    protocol_login_bin = protocol_login(playerid, password)
+def pack_login(playerid, PASSWORD):
+    protocol_login_bin = protocol_login(playerid, PASSWORD)
     bin = pack('uint:16, bits:104', 13, bytes(protocol_login_bin.encode('utf-8')))
     return bin
 
@@ -73,12 +65,15 @@ def new_client():
 ###############################################################################
 #
 # 客户端发起通信协议
+# 
+# 1. 请求登录
+# 2. 请求进入
 #
 ###############################################################################
-def req_login(client, playerid, password):
+def req_login(client, playerid, PASSWORD):
     print_align("[Login]", "娱乐一下，登录游戏看看...")
-    # protocol = protocol_login(playerid, password)
-    client.send(pack_login(playerid, password).tobytes())
+    # protocol = protocol_login(playerid, PASSWORD)
+    client.send(pack_login(playerid, PASSWORD).tobytes())
     respdata = client.recv(1024)
 
     res = json.loads(respdata)
@@ -89,7 +84,12 @@ def req_login(client, playerid, password):
         print_align("[Login]", "恭喜，网络还行，登录成功了， 马上进入游戏开始Play吧...")
         return True
 
-def req_enter(client):
+def req_enter(client, playerid):
+    print_align("[Enter]", "玩家 " + str(playerid) + " 快速点击了 [进入游戏] 按钮， 迫不及待了...")
+
+    # 等一秒钟，模拟用户点击进入游戏按钮
+    sleep(1)
+
     protocol = pack_enter()
     client.send(protocol.tobytes())
     respdata = client.recv(1024)
@@ -101,37 +101,37 @@ def req_enter(client):
         print_align("[Enter]", "进入游戏成功, 开始大玩儿一场吧, Let's Rocket it!")
         return True
 
-def enter(client, playerid):
-    # 等一秒钟，模拟用户点击进入游戏按钮
-    sleep(1)
-
-    print_align("[Enter]", "玩家 " + str(playerid) + " 快速点击了 [进入游戏] 按钮， 迫不及待了...")
-
-    ret = req_enter(client)
-    if ret == False:
-        return False
-    
-    return True
-
+###############################################################################
+#
+# 客户端游戏具体逻辑（shift协议在此执行...）
+#
+###############################################################################
 def simulate_play():
     elpase = 5 # 等一下，就当在play
     print_align("[Play]", "先玩儿" + "["+str(elpase)+"S] 再说...")
     print_align("[Play]",  "Playing...")
+
+    # 游戏逻辑
     sleep(elpase)
+    
     print_align("[Play]", "["+str(elpase)+"S]" + "时间到，该写作业了，拜拜下次再约...")
     
 def close(client):
     print_align("[Close]", "断开链接, 下线了...")
     client.close()
 
-# Player 生命周期
-def play(playid, password):
+###############################################################################
+#
+# 客户端 Player 生命周期
+#
+###############################################################################
+def play(playid, PASSWORD):
     client = new_client()
-    res = req_login(client, playid, password)
+    res = req_login(client, playid, PASSWORD)
     if res == False:
         return
 
-    res = enter(client, playid)
+    res = req_enter(client, playid)
     if res == False:
         return
     
@@ -139,33 +139,22 @@ def play(playid, password):
 
     close(client)
 
-def Align(string, length=0):
-    if length == 0:
-        return string
-    
-    slen = len(string)
-    re = string
-    if isinstance(string, str):
-        placeholder = ' '
-    else:
-        placeholder = u' '
-    
-    while slen < length:
-        re += placeholder
-        slen += 1
-    
-    return re
+###############################################################################
+#
+# 客户端发起模拟
+#
+###############################################################################
+# 玩家个数
+N = 1 
 
-def print_align(name, string):
-    print (Align(name, 10) + Align(string, 10))
-
-# 模拟玩家个数
-N = 1
+# 玩家基础值
 BASEE = 100
+
+# 开启游戏
 def run():
     for idx in range(1, N+1):
         playerid = idx + BASEE
         print_align("[main]", "玩家 "+str(playerid) + " 准备进入游戏......")
-        threading.Thread(target=play, args=(str(playerid), password)).start()
+        threading.Thread(target=play, args=(str(playerid), PASSWORD)).start()
 
 run()
