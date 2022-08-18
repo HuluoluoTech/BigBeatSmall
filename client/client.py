@@ -13,31 +13,52 @@ PORT = 8001
 
 password = "123"
 
-def pack_login():
-    login = 'login,101,123'
-    bin = pack('uint:16, bits:104', 13, bytes(login.encode('utf-8')))
-    return bin
+
 
 ###############################################################################
 #
 # 客户端发起的通信协议格式
-# 1 登录协议： login,playerid,password#
-# 2 进入游戏： enter#
-# 3 移动协议： shift, x, y#
+# 1 登录协议： login,playerid,password
+# 2 进入游戏： enter
+# 3 移动协议： shift, x, y
 #
 ###############################################################################
 def protocol_login(playerid, password):
-    res = "login," + playerid + "," + password + "#"
+    res = "login," + playerid + "," + password
     return res
 
 def protocol_enter():
-    res = "enter#"
+    res = "enter"
     return res
 
 def protocol_shift(x, y):
-    res = "shift," + x + "," + y + "#"
+    res = "shift," + x + "," + y
     return res
 
+###############################################################################
+#
+# 使用bitstring打包通信协议格式
+# 1 登录协议： pack(login,playerid,password)
+# 2 进入游戏： enter
+# 3 移动协议： shift, x, y
+#
+###############################################################################
+
+def pack_login(playerid, password):
+    protocol_login_bin = protocol_login(playerid, password)
+    bin = pack('uint:16, bits:104', 13, bytes(protocol_login_bin.encode('utf-8')))
+    return bin
+
+def pack_enter():
+    protocol_enter_bin = protocol_enter()
+    bin = pack('uint:16, bits:40', 5, bytes(protocol_enter_bin.encode('utf-8')))
+    return bin
+
+def pack_login(playerid, password):
+    protocol_shift_bin = protocol_shift(playerid, password)
+    bin = pack('uint:16, bits:104', 13, bytes(protocol_shift_bin.encode('utf-8')))
+    return bin
+    
 ###############################################################################
 #
 # 玩家新建客户端链接
@@ -56,9 +77,8 @@ def new_client():
 ###############################################################################
 def req_login(client, playerid, password):
     print_align("[Login]", "娱乐一下，登录游戏看看...")
-    protocol = protocol_login(playerid, password)
-    # client.send(protocol.encode('utf-8'))
-    client.send(pack_login().tobytes())
+    # protocol = protocol_login(playerid, password)
+    client.send(pack_login(playerid, password).tobytes())
     respdata = client.recv(1024)
 
     res = json.loads(respdata)
@@ -70,8 +90,8 @@ def req_login(client, playerid, password):
         return True
 
 def req_enter(client):
-    protocol = protocol_enter()
-    client.send(protocol.encode('utf-8'))
+    protocol = pack_enter()
+    client.send(protocol.tobytes())
     respdata = client.recv(1024)
     res = json.loads(respdata)
     if res["code"] != 0:
