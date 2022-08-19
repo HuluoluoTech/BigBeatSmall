@@ -7,20 +7,23 @@
 	5、启动agentmgr
 	6、启动scene
 ]]
-local skynet = require "skynet"
-local skynet_manager = require "skynet.manager"
-local cluster = require "skynet.cluster"
-local config_run = require "config_run"
+local skynet 		= require "skynet"
+local cluster 		= require "skynet.cluster"
+local config_run 	= require "config_run"
+
+-- import skynet.name(“”) function
+require "skynet.manager"
 
 -- 打印吉祥物
 require("utils")
 print_mascot()
 
 --[[
-* 剥离一个function出来，所有的closure看着比较乱的感觉，包括Rust的！
-* 执行逻辑
+	* 剥离一个function出来，所有的closure看着比较乱的感觉，包括Rust的！
+	* 执行逻辑
 ]]
 local function run()
+	-- Turn On Debug Console
 	skynet.newservice("debug_console", 8009)
 
 	--初始化当前Node
@@ -44,7 +47,6 @@ local function run()
 	for i, v in pairs(node_cfg.gateway or {}) do
 		local srv = skynet.newservice("gateway","gateway", i)
 		skynet.name("gateway"..i, srv)
-		skynet.name(".xxx", srv)
 		skynet.error("[main] gateway service: ", srv)
 	end
 
@@ -55,8 +57,6 @@ local function run()
 	end
 
 	--开启agentmgr服务
-	--#TODO
-	--agentmgr 设为全局服务？？？
 	local anode = config_run.agentmgr.node
 	if current_node == anode then
 		local srv = skynet.newservice("agentmgr", "agentmgr", 0)
@@ -77,5 +77,5 @@ local function run()
 	skynet.error("[main] Exit.")
 end
 
---服务入口
+--Main
 skynet.start(run)
