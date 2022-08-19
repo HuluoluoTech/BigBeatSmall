@@ -13,14 +13,14 @@ require "utils"
 s.client = {}
 s.client.login = function(fd, msg, source)
 	skynet.error("[login] login")
-	local message_len = #msg
-	if message_len < 3 then
-		local res = response(1, "failed", "Wrong Params")
-		return res
-	end
+	-- local message_len = #msg
+	-- if message_len < 3 then
+	-- 	local res = response(1, "failed", "Wrong Params")
+	-- 	return res
+	-- end
 
-	local playerid 	= tonumber(msg[2])
-	local password  = msg[3]
+	local playerid 	= msg['playerid'] --tonumber(msg[2])
+	local password  = msg['password'] --msg[3]
 	local gate 		= source
 
     --校验用户名密码

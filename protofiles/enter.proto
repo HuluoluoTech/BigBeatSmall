@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package enter;
+
+message Enter {
+    int32  id  = 1;
+}

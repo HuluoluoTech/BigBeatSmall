@@ -7,7 +7,8 @@ from bitstring import BitStream
 from utils import print_align
 from config import HOST, PORT, PASSWORD
 import protofiles.login_pb2 as login_pb
-
+import protofiles.header_pb2 as header_pb
+import protofiles.enter_pb2 as enter_pb
     
 ###############################################################################
 #
@@ -53,8 +54,14 @@ def pack_shift(x, y):
     bin = pack('uint:16, bits:104', 13, bytes(protocol_shift_bin.encode('utf-8')))
     return bin
 
+def protoc_enter():
+    enter = enter_pb.Enter()
+    enter.id = 2
+    return enter.SerializeToString()
+
 def protoc_login(playerid):
     login = login_pb.Login()
+    login.id = 3
     login.playerid = playerid
     login.password = PASSWORD
     return login.SerializeToString()
@@ -81,8 +88,8 @@ def new_client():
 def req_login(client, playerid, PASSWORD):
     print_align("[Login]", "娱乐一下，登录游戏看看...")
 
-    pl = protoc_login(101)
-    bin = pack('uint:16, bits:56', 7, bytes(pl))
+    pl = protoc_login(int(playerid))
+    bin = pack('uint:16, bits:72', 9, bytes(pl))
     client.send(bin.tobytes())
     
     # client.send(pack_login(playerid, PASSWORD).tobytes())
@@ -102,8 +109,12 @@ def req_enter(client, playerid):
     # 等一秒钟，模拟用户点击进入游戏按钮
     sleep(1)
 
-    protocol = pack_enter()
-    client.send(protocol.tobytes())
+    pe = protoc_enter()
+    bin = pack('uint:16, bits:16', 2, bytes(pe))
+    client.send(bin.tobytes())
+
+    # protocol = pack_enter()
+    # client.send(protocol.tobytes())
     respdata = client.recv(1024)
     res = json.loads(respdata)
     if res["code"] != 0:

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package header;
+
+message Header {
+    int32  id  = 1;
+    string cmd = 2;
+}

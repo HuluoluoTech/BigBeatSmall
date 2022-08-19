@@ -149,11 +149,17 @@ s.resp.kick = function(source, playerid)
 end
 
 function process_msg(fd, msgstr)
-    skynet.error("[gateway] process_msg")
+    skynet.error("[gateway] process_msg: ", msgstr)
 
-    parse("login", msgstr)
+    local buff = parse(msgstr)
+    if not buff then
+        return
+    end
 
-    local cmd, msg  = str_unpack(msgstr)
+    -- local cmd, msg  = str_unpack(msgstr)
+    local cmd       = buff.cmd
+    local msg       = buff --buff.password
+
     local conn      = conns[fd]
     local playerid  = conn.playerid
     --playerid is nil
@@ -175,7 +181,7 @@ function process_msg(fd, msgstr)
 		skynet.send(login, "lua", "client", fd, cmd, msg)
     else
         local gplayer = players[playerid] 
-        local agent = gplayer.agent
+        local agent   = gplayer.agent
 
         --client是自定义的消息名
 		skynet.send(agent, "lua", "client", cmd, msg)

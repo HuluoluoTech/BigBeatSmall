@@ -41,8 +41,8 @@ s.resp.client = function(source, cmd, msg)
 		end
     else
         skynet.error("s.resp.client fail", cmd)
-		-- local res = response(1, "failed", "调用了未知的方法 => ["..cmd.."]")
-		-- skynet.send(source, "lua", "send", s.id, res)
+		local res = response(1, "failed", "调用了未知的方法 => ["..cmd.."]")
+		skynet.send(source, "lua", "send", s.id, res)
     end
 end
 
