@@ -12,9 +12,6 @@ local skynet_manager = require "skynet.manager"
 local cluster = require "skynet.cluster"
 local config_run = require "config_run"
 
-require "protoparser"
-test()
-
 -- 打印吉祥物
 require("utils")
 print_mascot()

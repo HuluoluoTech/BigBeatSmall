@@ -6,7 +6,9 @@ from bitstring import pack
 from bitstring import BitStream
 from utils import print_align
 from config import HOST, PORT, PASSWORD
+import protofiles.login_pb2 as login_pb
 
+    
 ###############################################################################
 #
 # 客户端发起的通信协议格式
@@ -50,6 +52,12 @@ def pack_shift(x, y):
     protocol_shift_bin = protocol_shift(x, y)
     bin = pack('uint:16, bits:104', 13, bytes(protocol_shift_bin.encode('utf-8')))
     return bin
+
+def protoc_login(playerid):
+    login = login_pb.Login()
+    login.playerid = playerid
+    login.password = PASSWORD
+    return login.SerializeToString()
     
 ###############################################################################
 #
@@ -72,8 +80,12 @@ def new_client():
 ###############################################################################
 def req_login(client, playerid, PASSWORD):
     print_align("[Login]", "娱乐一下，登录游戏看看...")
-    # protocol = protocol_login(playerid, PASSWORD)
-    client.send(pack_login(playerid, PASSWORD).tobytes())
+
+    pl = protoc_login(101)
+    bin = pack('uint:16, bits:56', 7, bytes(pl))
+    client.send(bin.tobytes())
+    
+    # client.send(pack_login(playerid, PASSWORD).tobytes())
     respdata = client.recv(1024)
 
     res = json.loads(respdata)

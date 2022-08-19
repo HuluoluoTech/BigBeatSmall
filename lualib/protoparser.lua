@@ -8,16 +8,12 @@
 
 local pb = require "protobuf"
 
-function test()
-    pb.register_file("./protofiles/login.pb")
-    local msg = {
-        playerid = 101,
-        password = "123"
-    }
+--[[
+    注册用到的协议
+]]
+pb.register_file("./protofiles/login.pb")
 
-    --encode
-    local buff = pb.encode("login.Login", msg)
-    print("len:"..string.len(buff))
+local function parse_login(buff)
     --解码
     local umsg = pb.decode("login.Login", buff)
     if umsg then
@@ -26,5 +22,13 @@ function test()
         print("password:"..umsg.password)
     else
         print("error")
+    end
+end
+
+function parse(protocol, msg)
+    if protocol == "login" then
+        parse_login(msg)
+    elseif protocol == "enter" then
+        print("....parse  enter....")
     end
 end

@@ -10,6 +10,7 @@ local s             = require "service" --import 的是 'service.lua', 在 luali
 
 --import utils.lua, 包含了 pack / unpack 工具方法
 require "utils"
+require "protoparser"
 
 local queue
 
@@ -149,6 +150,9 @@ end
 
 function process_msg(fd, msgstr)
     skynet.error("[gateway] process_msg")
+
+    parse("login", msgstr)
+
     local cmd, msg  = str_unpack(msgstr)
     local conn      = conns[fd]
     local playerid  = conn.playerid
